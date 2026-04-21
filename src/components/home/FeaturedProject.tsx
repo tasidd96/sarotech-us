@@ -2,7 +2,7 @@ export default function FeaturedProject() {
   return (
     <section id="projects" className="bg-saro-dark py-12 text-white lg:py-16">
       <div className="container-lg">
-        <h2 className="mb-8 text-2xl font-bold">Why SARO TECH?</h2>
+        <h2 className="mb-8 text-2xl font-semibold">Why SARO TECH?</h2>
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Image */}
@@ -15,7 +15,7 @@ export default function FeaturedProject() {
 
           {/* Content */}
           <div className="flex flex-col justify-center">
-            <h3 className="mb-4 text-3xl font-bold lg:text-4xl">
+            <h3 className="mb-4 text-3xl font-semibold lg:text-4xl">
               Built for Strength, Style &amp; Scale
             </h3>
             <p className="mb-6 text-gray-300">

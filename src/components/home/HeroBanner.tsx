@@ -20,7 +20,7 @@ export default function HeroBanner() {
         <p className="mb-2 text-sm tracking-wider text-saro-green-light">
           Now Open &amp; Available Nationwide
         </p>
-        <h1 className="mb-4 max-w-[600px] text-[40px] font-bold leading-tight text-white">
+        <h1 className="mb-4 max-w-[600px] text-[40px] font-semibold leading-tight text-white">
           Next-generation architectural finishes — now in America
         </h1>
         <p className="mb-6 max-w-[500px] text-[14px] leading-relaxed text-gray-300">
