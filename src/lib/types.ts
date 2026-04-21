@@ -16,6 +16,21 @@ export interface Inventory {
   allowOutOfStock: boolean;
 }
 
+export interface ProductDimensions {
+  heightCm: number;
+  widthCm: number;
+  thicknessCm: number;
+}
+
+export interface ProductDetail {
+  toneFamily?: string;
+  swatchColor?: string;
+  dimensions?: ProductDimensions;
+  piecesPerBox?: number;
+  m2PerBox?: number;
+  description?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -28,6 +43,7 @@ export interface Product {
   price?: number;
   featured?: boolean;
   inventory?: Inventory;
+  detail?: ProductDetail;
 }
 
 export interface Category {

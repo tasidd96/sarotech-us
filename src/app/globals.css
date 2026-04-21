@@ -51,6 +51,126 @@ body {
   }
 }
 
+/* ── Standardized container widths ──
+ * .container-std → 1200px (Bestsellers, Footer, Shop by Category)
+ * .container-lg  → 1440px (Navbar, Why SARO TECH, Products page)
+ * Unique widths (hero, full-bleed) stay component-local.
+ */
+.container-std {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+.container-lg {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+@media (max-width: 768px) {
+  .container-std, .container-lg {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* ── Products-page animations (match source) ── */
+@keyframes fadeInDown {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Sub-nav dropdown (appears below strip on hover) */
+.sub-nav-dropdown {
+  animation: fadeInDown 0.3s ease;
+}
+
+/* Global nav item entrance stagger (HOME, PRODUCTS, …) — animates the <li>
+ * so the separator line included in the <li> rides along with the link. */
+.nav-list > li {
+  animation: fadeInDown 0.5s ease both;
+}
+.nav-list > li:nth-child(1) { animation-delay: 0.05s; }
+.nav-list > li:nth-child(2) { animation-delay: 0.12s; }
+.nav-list > li:nth-child(3) { animation-delay: 0.19s; }
+.nav-list > li:nth-child(4) { animation-delay: 0.26s; }
+.nav-list > li:nth-child(5) { animation-delay: 0.33s; }
+.nav-list > li:nth-child(6) { animation-delay: 0.40s; }
+
+/* Pagination container entrance */
+.pagination-container {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Products page layout — flex + inline-styled flex-basis on the aside so
+ * React drives the width value directly (sidesteps Tailwind cascade + Chrome's
+ * grid-template-columns interpolation quirks). The aside's inner wrapper stays
+ * at 300px so content never squishes — the outer just clips + fades while
+ * its flex-basis animates to 0. Products column grows in lockstep.
+ * Easing: cubic-bezier(0.4,0,0.2,1) matches .nav-carousel-strip. */
+.products-container {
+  display: flex;
+  flex-direction: column;
+  column-gap: 0;
+}
+@media (min-width: 1024px) {
+  .products-container {
+    flex-direction: row;
+    column-gap: 30px;
+    transition: column-gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .products-container.filters-closed {
+    column-gap: 0;
+  }
+}
+
+.filters-aside {
+  flex-grow: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-width: 0;
+  opacity: 1;
+  transition:
+    flex-basis 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.filters-aside-inner {
+  width: 300px;
+}
+.products-container.filters-closed .filters-aside {
+  opacity: 0;
+  pointer-events: none;
+}
+.products-column {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Per-page / sort dropdown transition (open/close) */
+.sort-dropdown-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+  pointer-events: none;
+}
+.sort-dropdown-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0s;
+  pointer-events: auto;
+}
+
 /* ── Nav link hover underline animation (matches source exactly) ── */
 .nav-link-item {
   text-decoration: none;
@@ -101,9 +221,10 @@ body {
   font-family: 'PasticheGrotesque', Arial, sans-serif;
 }
 .locations-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 .locations-header {
   display: flex;
@@ -136,7 +257,7 @@ body {
 }
 .location-row {
   display: grid;
-  grid-template-columns: 1.5fr 2fr 1fr auto;
+  grid-template-columns: 2fr 1.5fr 1fr auto;
   gap: 2rem;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #ffffff;

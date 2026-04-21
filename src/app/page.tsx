@@ -21,8 +21,8 @@ export default function Home() {
       <PopularProducts />
       <ShopByCategory />
       <FeaturedProject />
-      <ProjectGallery />
       <LocationsSection />
+      <ProjectGallery />
     </>
   );
 }

@@ -11,6 +11,15 @@ export const products: Product[] = [
     productType: "wall-panels",
     image: "/images/products/a02-nogal-natural.png",
     featured: true,
+    detail: {
+      toneFamily: "Natural Tones",
+      swatchColor: "#6f4a2d",
+      dimensions: { heightCm: 290, widthCm: 15.5, thicknessCm: 1.8 },
+      piecesPerBox: 14,
+      m2PerBox: 6.4554,
+      description:
+        "Add warmth and elegance to your walls or ceilings with this fluted laminated cladding. With a coverage of 6.4554 m² per box, its easy installation and realistic finish transform interiors with premium architectural depth and lasting durability.",
+    },
   },
   {
     id: "2",
@@ -21,6 +30,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a09-encino.png",
+    detail: { toneFamily: "Natural Tones", swatchColor: "#e4d5b7" },
   },
   {
     id: "3",
@@ -31,6 +41,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a103-parota.png",
+    detail: { toneFamily: "Natural Tones", swatchColor: "#8a6a55" },
   },
   {
     id: "4",
@@ -41,6 +52,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a109-white-oak.png",
+    detail: { toneFamily: "Light Tones", swatchColor: "#eae0cd" },
   },
   {
     id: "5",
@@ -51,6 +63,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a46-parota-black.png",
+    detail: { toneFamily: "Dark Tones", swatchColor: "#3a2a22" },
   },
   {
     id: "6",
@@ -61,6 +74,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a56-pino-black.png",
+    detail: { toneFamily: "Dark Tones", swatchColor: "#1f1a17" },
   },
   {
     id: "7",
@@ -71,6 +85,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a46-parota-black.png",
+    detail: { toneFamily: "Dark Tones", swatchColor: "#2a2520" },
   },
   {
     id: "8",
@@ -81,6 +96,7 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a109-white-oak.png",
+    detail: { toneFamily: "Gray Tones", swatchColor: "#8a8a8a" },
   },
   {
     id: "9",
