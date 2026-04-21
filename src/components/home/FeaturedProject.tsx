@@ -1,7 +1,7 @@
 export default function FeaturedProject() {
   return (
     <section id="projects" className="bg-saro-dark py-12 text-white lg:py-16">
-      <div className="mx-auto max-w-8xl px-4 lg:px-8">
+      <div className="container-lg">
         <h2 className="mb-8 text-2xl font-bold">Why SARO TECH?</h2>
 
         <div className="grid gap-8 lg:grid-cols-2">

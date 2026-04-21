@@ -4,44 +4,44 @@ import Link from "next/link";
 type CarouselCat = { name: string; image?: string };
 
 const CAROUSEL_CATEGORIES: CarouselCat[] = [
-  { name: "Floor Decking", image: "/images/categories/deck-para-piso.jpg" },
-  { name: "Exterior Corner" },
-  { name: "Laminated Corner" },
-  { name: "Premium Wood Board Corner" },
-  { name: "Coextruded Cladding" },
-  { name: "Extruded Cladding", image: "/images/categories/lambrin-extruido.jpg" },
-  { name: "Ceiling Louver" },
-  { name: "Synthetic Marble", image: "/images/categories/marmol-sintetico.jpg" },
-  { name: "Continuous Synthetic Marble" },
-  { name: "Premium Synthetic Marble" },
-  { name: "Wide Cladding Panel" },
-  { name: "Laminated Cladding Panel", image: "/images/categories/panel-lambrin-laminado.jpg" },
-  { name: "Wavy Cladding Panel" },
-  { name: "SPC Wall Panel" },
-  { name: "Wavy Panel", image: "/images/categories/panel-wavy.jpg" },
+  { name: "Floor Decking",               image: "/images/categories/deck-para-piso.jpg" },
+  { name: "Exterior Corner",             image: "/images/categories/wall-cladding.jpg" },
+  { name: "Laminated Corner",            image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Premium Wood Board Corner",   image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Coextruded Cladding",         image: "/images/categories/lambrin-extruido.jpg" },
+  { name: "Extruded Cladding",           image: "/images/categories/lambrin-extruido.jpg" },
+  { name: "Ceiling Louver",              image: "/images/categories/lambrin-extruido.jpg" },
+  { name: "Synthetic Marble",            image: "/images/categories/marmol-sintetico.jpg" },
+  { name: "Continuous Synthetic Marble", image: "/images/categories/marmol-sintetico.jpg" },
+  { name: "Premium Synthetic Marble",    image: "/images/categories/marmol-sintetico.jpg" },
+  { name: "Wide Cladding Panel",         image: "/images/categories/wall-cladding.jpg" },
+  { name: "Laminated Cladding Panel",    image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Wavy Cladding Panel",         image: "/images/categories/panel-wavy.jpg" },
+  { name: "SPC Wall Panel",              image: "/images/categories/wall-cladding.jpg" },
+  { name: "Wavy Panel",                  image: "/images/categories/panel-wavy.jpg" },
   { name: "Adhesive" },
   { name: "Aluminum Profile" },
   { name: "Transition Profile" },
   { name: "Lighting Profile" },
   { name: "Wide Lighting Profile" },
   { name: "Stair Nosing Profile" },
-  { name: "Premium Wood Board Profile" },
-  { name: "PU Synthetic Stone", image: "/images/categories/piedra-sintetica-pu.jpg" },
-  { name: "Travertine Synthetic Stone", image: "/images/categories/piedra-sintetica-travertino.jpg" },
-  { name: "PVC-ASA Wall Panel" },
-  { name: "Vinyl Flooring" },
-  { name: "StoneFlex" },
-  { name: "Mirror Board" },
-  { name: "Smooth Laminated Board" },
-  { name: "Premium Wood Board" },
-  { name: "Premium Metallic Board" },
-  { name: "Premium Wave Board" },
+  { name: "Premium Wood Board Profile",  image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "PU Synthetic Stone",          image: "/images/categories/piedra-sintetica-pu.jpg" },
+  { name: "Travertine Synthetic Stone",  image: "/images/categories/piedra-sintetica-travertino.jpg" },
+  { name: "PVC-ASA Wall Panel",          image: "/images/categories/wall-cladding.jpg" },
+  { name: "Vinyl Flooring",              image: "/images/categories/deck-para-piso.jpg" },
+  { name: "StoneFlex",                   image: "/images/categories/piedra-sintetica-pu.jpg" },
+  { name: "Mirror Board",                image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Smooth Laminated Board",      image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Premium Wood Board",          image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Premium Metallic Board",      image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Premium Wave Board",          image: "/images/categories/panel-wavy.jpg" },
   { name: "Beam Caps" },
-  { name: "Coextruded Beam" },
-  { name: "Laminated Beam" },
-  { name: "Wall Cladding", image: "/images/categories/wall-cladding.jpg" },
-  { name: "Wall Fence" },
-  { name: "SPC Baseboard" },
+  { name: "Coextruded Beam",             image: "/images/categories/lambrin-extruido.jpg" },
+  { name: "Laminated Beam",              image: "/images/categories/panel-lambrin-laminado.jpg" },
+  { name: "Wall Cladding",               image: "/images/categories/wall-cladding.jpg" },
+  { name: "Wall Fence",                  image: "/images/categories/wall-cladding.jpg" },
+  { name: "SPC Baseboard",               image: "/images/categories/deck-para-piso.jpg" },
 ];
 
 const MAIN_CATEGORIES = [
@@ -90,7 +90,18 @@ export default function ShopByCategory() {
                       loading="lazy"
                     />
                   ) : (
-                    <span className="text-[13px] text-[#666]">Loading…</span>
+                    <svg
+                      className="h-10 w-10 text-[#ccc]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1}
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" />
+                      <path strokeLinecap="round" d="M3 15l5-5 4 4 3-3 6 6" />
+                      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none" />
+                    </svg>
                   )}
                 </div>
                 <p className="category-carousel-label text-center text-[13px] leading-tight text-saro-dark group-hover:text-saro-green">

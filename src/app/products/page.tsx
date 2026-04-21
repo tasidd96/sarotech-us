@@ -14,13 +14,14 @@ import Pagination from "@/components/products/Pagination";
 function ProductsPageContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as ProductCategory | null;
+  const qParam = searchParams.get("q") ?? "";
   const initialTab: ProductCategory | null = tabParam ?? null;
 
   const [activeCategory, setActiveCategory] = useState<ProductCategory | null>(
     initialTab
   );
   const [selectedTypes, setSelectedTypes] = useState<ProductType[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(qParam);
   const [sortBy, setSortBy] = useState("name-asc");
   const [perPage, setPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);

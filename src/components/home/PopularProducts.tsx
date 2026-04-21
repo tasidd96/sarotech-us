@@ -7,7 +7,7 @@ export default function PopularProducts() {
 
   return (
     <section className="py-12 lg:py-16">
-      <div className="mx-auto max-w-[1200px] px-4">
+      <div className="container-std">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Bestsellers</h2>
           <Link href="/products" className="text-sm text-saro-green hover:underline">
