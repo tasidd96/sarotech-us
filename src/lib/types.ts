@@ -10,6 +10,12 @@ export type ProductType =
   | "corner-pieces"
   | "coextruded-panels";
 
+export interface Inventory {
+  available: number;
+  inStock: boolean;
+  allowOutOfStock: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -21,6 +27,7 @@ export interface Product {
   image: string;
   price?: number;
   featured?: boolean;
+  inventory?: Inventory;
 }
 
 export interface Category {
