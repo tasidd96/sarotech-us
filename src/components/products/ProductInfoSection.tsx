@@ -14,7 +14,7 @@ interface Props {
 type Key = "description" | "dimensions" | "care" | "warranty";
 
 export default function ProductInfoSection({ variant, relatedProducts }: Props) {
-  const [open, setOpen] = useState<Set<Key>>(new Set(["description"]));
+  const [open, setOpen] = useState<Set<Key>>(new Set<Key>(["description"]));
   const [supportOpen, setSupportOpen] = useState(true);
 
   const toggle = (k: Key) =>

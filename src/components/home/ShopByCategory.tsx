@@ -48,17 +48,17 @@ const MAIN_CATEGORIES = [
   {
     id: "interior",
     name: "Interior Coverings",
-    image: "/images/categories/panel-lambrin-laminado.jpg",
+    image: "/images/categories/interior.jpg",
   },
   {
     id: "exterior",
     name: "Exterior Coverings",
-    image: "/images/categories/deck-para-piso.jpg",
+    image: "/images/categories/exterior.jpg",
   },
   {
     id: "accessories",
     name: "Accessories",
-    image: "/images/categories/wall-cladding.jpg",
+    image: "/images/categories/accessories.jpg",
   },
 ];
 
@@ -66,7 +66,7 @@ export default function ShopByCategory() {
   return (
     <section className="category-carousel-section bg-white py-12 lg:py-16">
       <div className="category-carousel-container container-lg">
-        <h3 className="category-carousel-title mb-8 text-[20px] italic text-saro-dark underline underline-offset-[6px]">
+        <h3 className="category-carousel-title mb-8 text-[20px] font-semibold text-saro-dark">
           Shop by Category
         </h3>
 
@@ -114,27 +114,27 @@ export default function ShopByCategory() {
 
         {/* Main 3-card category grid (Interior / Exterior / Accessories) */}
         <div className="main-categories">
-          <div className="categories-grid grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="categories-grid grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {MAIN_CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/products?tab=${cat.id}`}
-                className="category-card group relative block overflow-hidden rounded-lg"
+                className="category-card group relative block h-[400px] overflow-hidden rounded-lg"
               >
-                <div className="category-image relative aspect-[3/2]">
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                  <div className="category-overlay absolute inset-0 bg-black/40 transition-colors duration-300 group-hover:bg-black/55" />
-                  <div className="absolute inset-0 flex items-center justify-center text-center text-white">
-                    <h3 className="category-title text-[24px] font-semibold uppercase tracking-[0.08em]">
-                      {cat.name}
-                    </h3>
-                  </div>
+                {/* Photo — fills card, subtle zoom on hover */}
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                />
+
+                {/* Pill label — bottom-left, matches sarotech.io exactly */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="inline-block rounded-[5px] bg-white/95 px-3 py-2 text-[17.6px] italic font-normal text-black">
+                    {cat.name}
+                  </h3>
                 </div>
               </Link>
             ))}

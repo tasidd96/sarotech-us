@@ -14,9 +14,10 @@ Durable context for Claude sessions on the sarotech-us website. Checked into the
 E-commerce marketing site for Sarotech (US). Stack: Next.js 14 App Router, TypeScript, Tailwind, deployed on Vercel. Source of truth for products/inventory is **GoHighLevel (aka LeadConnector / HighLevel CRM)** — the site pulls product + price data from the HighLevel API v2 server-side.
 
 Current state (as of 2026-04-21):
-- Site layout, nav, branding, and product-page shell exist (see `src/app/products/`, `src/components/`).
-- HighLevel inventory layer **scaffolded but not wired to the UI** — see `src/lib/highlevel.ts`, `src/lib/types.ts`, `src/lib/catalog.ts`.
-- Next planned work: wire product pages to live HighLevel data, finalize build pipeline for Vercel deploy.
+- Full site built: homepage, /products listing (filters, sort, pagination), /products/[slug]/[variant] detail (hero, calculator, info, FAQ).
+- HighLevel inventory layer wired — `getCatalog()` in `src/lib/catalog.ts` feeds both product routes; falls back to local seed data until env vars are set.
+- **Pending before going live:** backdate / log actual inventory in HighLevel so SKUs match local seed data and the live overlay returns correct quantities.
+- Next planned work: Vercel deploy, set `HIGHLEVEL_LOCATION_ID` + `HIGHLEVEL_ACCESS_TOKEN` env vars in Vercel dashboard, smoke-test live data.
 
 ## HighLevel API integration
 

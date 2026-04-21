@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { products } from "@/data/products";
+import { getCatalog } from "@/lib/catalog";
 import { findVariant, findProductVariants, variantSlug } from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
@@ -16,7 +16,8 @@ export async function generateMetadata({
   params: Promise<PageParams>;
 }): Promise<Metadata> {
   const { productSlug, variantSlug: vSlug } = await params;
-  const variant = findVariant(productSlug, vSlug, products);
+  const catalog = await getCatalog();
+  const variant = findVariant(productSlug, vSlug, catalog);
   if (!variant) return { title: "Product not found | SARO TECH USA" };
   return {
     title: `${variant.name} — ${variant.sku}-${variant.variantName} | SARO TECH USA`,
@@ -38,12 +39,13 @@ export default async function ProductVariantPage({
   params: Promise<PageParams>;
 }) {
   const { productSlug, variantSlug: vSlug } = await params;
-  const variant = findVariant(productSlug, vSlug, products);
+  const catalog = await getCatalog();
+  const variant = findVariant(productSlug, vSlug, catalog);
   if (!variant) notFound();
 
-  const siblings = findProductVariants(productSlug, products);
+  const siblings = findProductVariants(productSlug, catalog);
   // Related products: grab up to 3 accessory / cross-category picks.
-  const related = products
+  const related = catalog
     .filter(
       (p) =>
         p.sku !== variant.sku &&

@@ -58,7 +58,7 @@ export default function MaterialCalculator({
     <section className="calculator-section bg-[#e6e6e6] px-5 py-5">
       <div className="calculator-container mx-auto flex max-w-[1200px] flex-col gap-5">
         <div className="calculator-title-row text-center">
-          <h2 className="calculator-title text-[24px] italic underline decoration-black underline-offset-[6px] text-saro-dark">
+          <h2 className="calculator-title text-[24px] font-semibold text-saro-dark">
             Calculate how much material you need for your project
           </h2>
         </div>

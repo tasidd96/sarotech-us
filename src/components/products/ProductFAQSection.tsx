@@ -36,7 +36,7 @@ export default function ProductFAQSection({ productName }: Props) {
     <div className="seo-enrichment-container bg-[#fafafa] py-12">
       <div className="seo-faq-wrapper container-lg">
         <div className="faq-section-container">
-          <h3 className="faq-section-title mb-6 text-center text-[20px] italic text-saro-dark underline underline-offset-[6px]">
+          <h3 className="faq-section-title mb-6 text-center text-[20px] font-semibold text-saro-dark">
             Frequently Asked Questions
           </h3>
 
@@ -82,7 +82,7 @@ export default function ProductFAQSection({ productName }: Props) {
 
         {/* Installation Guide teaser */}
         <div className="install-guide mt-12">
-          <h3 className="mb-6 text-center text-[20px] italic text-saro-dark underline underline-offset-[6px]">
+          <h3 className="mb-6 text-center text-[20px] font-semibold text-saro-dark">
             Installation Guide
           </h3>
           <div className="grid gap-6 md:grid-cols-2">
