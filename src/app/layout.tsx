@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sarotech.us"),
   title: {
     default: "SARO TECH USA — Next-Generation Architectural Finishes",
     template: "%s | SARO TECH USA",
@@ -23,6 +25,7 @@ export default function RootLayout({
         <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <GoogleAnalytics />
       </body>
     </html>
   );
