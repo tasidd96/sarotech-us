@@ -96,7 +96,7 @@ export default function Header() {
         >
           {/* Nav list */}
           <nav style={{ flex: "1 1 0", minWidth: 0, display: "flex", justifyContent: "flex-end" }}>
-            <ul style={{ display: "flex", listStyle: "none", margin: 0, padding: 0 }}>
+            <ul className="nav-list" style={{ display: "flex", listStyle: "none", margin: 0, padding: 0 }}>
               {navLinks.map((link, i) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
 

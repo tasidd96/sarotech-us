@@ -9,15 +9,6 @@ export default function LocationsSection() {
   return (
     <section id="locations" className="locations-section">
       <div className="locations-container">
-        {/* Header: title left, subtitle right */}
-        <div className="locations-header">
-          <h2 className="locations-title">Our Service Areas</h2>
-          <p className="locations-subtitle">
-            Headquartered in Houston, TX — serving all of greater Texas and beyond.
-          </p>
-        </div>
-
-        {/* List of location rows */}
         <div className="locations-list">
           {locations.map((location) => {
             const typeLabel =
@@ -29,11 +20,11 @@ export default function LocationsSection() {
 
             return (
               <div key={location.id} className="location-row animate-in">
-                {/* 1. State / City */}
-                <h3 className="location-state">{location.name}</h3>
-
-                {/* 2. Address */}
+                {/* 1. Address (swapped to column A) */}
                 <p className="location-address">{location.address}</p>
+
+                {/* 2. State / City (swapped to column B) */}
+                <h3 className="location-state">{location.name}</h3>
 
                 {/* 3. Type */}
                 <p className="location-type">{typeLabel}</p>
