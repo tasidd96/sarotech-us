@@ -7,7 +7,7 @@ export default function ProjectGallery() {
   return (
     <section className="py-12 lg:py-16">
       <div className="container-std">
-        <h2 className="mb-8 text-2xl font-bold">Our Projects</h2>
+        <h2 className="mb-8 text-2xl font-semibold">Our Projects</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {nonFeatured.map((project) => (
