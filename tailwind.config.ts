@@ -9,8 +9,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        saro: {
+          green: "#2D6A4F",
+          "green-light": "#40916C",
+          "green-dark": "#1B4332",
+          dark: "#1A1A1A",
+          "dark-alt": "#2C2C2C",
+          light: "#F5F5F5",
+          gray: "#6B7280",
+        },
+      },
+      maxWidth: {
+        "8xl": "1440px",
       },
     },
   },
