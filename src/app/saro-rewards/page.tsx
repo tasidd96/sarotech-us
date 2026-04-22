@@ -105,24 +105,51 @@ const TIER_BADGES = [
 export default function SaroRewardsPage() {
   return (
     <>
-      <section className="bg-saro-dark py-20 text-white lg:py-28">
-        <div className="container-lg">
-          <p className="mb-2 text-sm tracking-wider text-saro-green-light">
-            Distributor Program
-          </p>
-          <h1 className="mb-4 max-w-[700px] text-[40px] font-semibold leading-tight">
-            SARO Rewards
+      {/* Hero row 1: decorative interior band with Rewards logo overlay */}
+      <section className="relative bg-saro-dark text-white">
+        <div className="relative h-[340px] w-full overflow-hidden lg:h-[460px]">
+          <Image
+            src="/images/rewards/hero-bg.png"
+            alt="SARO TECH interior showcase"
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 flex items-center justify-center px-6">
+            <Image
+              src="/images/rewards/hero-main.png"
+              alt="SARO TECH Rewards"
+              width={1400}
+              height={680}
+              className="h-auto w-[280px] sm:w-[380px] lg:w-[520px]"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Hero row 2: heading, taglines, tier-levels diagram, CTA */}
+        <div className="container-lg py-14 text-center lg:py-20">
+          <h1 className="mb-3 text-3xl font-semibold lg:text-[40px] lg:leading-tight">
+            Meet SARO Rewards
           </h1>
-          <p className="mb-8 max-w-[620px] text-[15px] leading-relaxed text-gray-300">
-            Grow with SARO TECH. Four tiers, real benefits, and a team invested in your business.
+          <p className="mb-3 text-base text-white lg:text-lg">
+            This is your opportunity to grow your business.
+          </p>
+          <p className="mx-auto mb-10 max-w-[640px] text-sm leading-relaxed text-gray-300 lg:text-base">
+            Get to know our distributor program and the multiple benefits SARO TECH delivers.
           </p>
 
-          <div className="relative mb-8 w-full max-w-[900px]">
+          <p className="mb-6 text-sm text-gray-400">
+            The distributor loyalty program has four tiers:
+          </p>
+
+          <div className="mx-auto mb-10 w-full max-w-[900px]">
             <Image
               src="/images/rewards/tier-levels.png"
               alt="SARO Rewards tiers: Bronze, Silver, Gold, Platinum"
-              width={1600}
-              height={277}
+              width={1800}
+              height={312}
               className="h-auto w-full"
               priority
             />
