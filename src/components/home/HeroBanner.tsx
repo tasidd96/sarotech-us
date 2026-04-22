@@ -1,5 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import TypewriterHeading from "./TypewriterHeading";
+
+const HERO_PREFIX = "Next-generation architectural finishes,";
+const HERO_SUFFIXES = [
+  " at your fingertips.",
+  " ready to ship.",
+  " promised to deliver.",
+];
 
 export default function HeroBanner() {
   return (
@@ -18,11 +26,13 @@ export default function HeroBanner() {
 
       <div className="relative z-10 mx-auto w-full max-w-[1920px] px-6 lg:px-[360px]">
         <p className="mb-2 text-sm tracking-wider text-saro-green-light">
-          Now Open in Houston, TX
+          Stored locally in Houston, Texas
         </p>
-        <h1 className="mb-4 max-w-[600px] text-[40px] font-semibold leading-tight text-white">
-          Next-generation architectural finishes, ready to ship
-        </h1>
+        <TypewriterHeading
+          prefix={HERO_PREFIX}
+          messages={HERO_SUFFIXES}
+          className="mb-4 max-w-[600px] text-[40px] font-semibold leading-tight text-white"
+        />
         <p className="mb-6 max-w-[500px] text-[14px] leading-relaxed text-gray-300">
           Premium WPC siding, decking, and wall panels built for strength, style, and sustainability. Serving contractors, developers, and wholesalers from our Houston warehouse across the Southwest.
         </p>

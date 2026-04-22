@@ -26,6 +26,11 @@ export default function HorizontalCarousel({
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef<{ x: number; scrollLeft: number } | null>(null);
+  // Distance dragged so far. Suppresses click events on children when the
+  // user was actually dragging (so dragging a tile does not navigate).
+  const dragMoved = useRef(0);
 
   const updateScrollState = useCallback(() => {
     const el = scrollerRef.current;
@@ -53,6 +58,42 @@ export default function HorizontalCarousel({
       left: direction === "left" ? -scrollStep : scrollStep,
       behavior: "smooth",
     });
+  };
+
+  // Mouse-drag-to-scroll. Touch devices already get native momentum
+  // scrolling, so we gate these handlers to pointer type = mouse.
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    dragStart.current = { x: e.clientX, scrollLeft: el.scrollLeft };
+    dragMoved.current = 0;
+    setIsDragging(true);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStart.current) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const dx = e.clientX - dragStart.current.x;
+    dragMoved.current = Math.max(dragMoved.current, Math.abs(dx));
+    el.scrollLeft = dragStart.current.scrollLeft - dx;
+  };
+
+  const endDrag = () => {
+    if (!dragStart.current) return;
+    dragStart.current = null;
+    setIsDragging(false);
+  };
+
+  // Suppress click on any descendant after a real drag happened. Without this
+  // the mouseup at the end of a drag still fires clicks on product tiles.
+  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (dragMoved.current > 5) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragMoved.current = 0;
+    }
   };
 
   const scrimFrom = SCRIM_FROM[scrimColor];
@@ -99,7 +140,16 @@ export default function HorizontalCarousel({
 
       <div
         ref={scrollerRef}
-        className="scrollbar-hide flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
+        onPointerCancel={endDrag}
+        onClickCapture={onClickCapture}
+        className={`scrollbar-hide flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 select-none ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
+        style={{ touchAction: "pan-y" }}
       >
         {children}
       </div>

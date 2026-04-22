@@ -107,7 +107,7 @@ export default function SaroRewardsPage() {
     <>
       {/* Hero row 1: decorative interior band with Rewards logo overlay */}
       <section className="relative bg-saro-dark text-white">
-        <div className="relative h-[340px] w-full overflow-hidden lg:h-[460px]">
+        <div className="relative h-[240px] w-full overflow-hidden lg:h-[380px]">
           <Image
             src="/images/rewards/hero-bg.png"
             alt="SARO TECH interior showcase"
@@ -122,7 +122,7 @@ export default function SaroRewardsPage() {
               alt="SARO TECH Rewards"
               width={1400}
               height={680}
-              className="h-auto w-[280px] sm:w-[380px] lg:w-[520px]"
+              className="h-auto w-[200px] sm:w-[240px] lg:w-[300px]"
               priority
             />
           </div>
@@ -246,8 +246,8 @@ export default function SaroRewardsPage() {
         </div>
       </section>
 
-      {/* Section 4: Founding Distributors (partner showcase placeholder) */}
-      <section className="bg-gray-50 py-12 lg:py-16">
+      {/* Section 4: Founding Distributors (hidden until US cohort signs on) */}
+      <section className="hidden bg-gray-50 py-12 lg:py-16">
         <div className="container-lg">
           <h2 className="mb-2 text-2xl font-semibold">Founding Distributors</h2>
           <p className="mb-10 max-w-[620px] text-gray-600">
@@ -375,8 +375,8 @@ export default function SaroRewardsPage() {
         </div>
       </section>
 
-      {/* Section 7: Testimonials (placeholder) */}
-      <section className="py-12 lg:py-16">
+      {/* Section 7: Testimonials (hidden until we have quotes) */}
+      <section className="hidden py-12 lg:py-16">
         <div className="container-lg">
           <h2 className="mb-2 text-2xl font-semibold">What Our Distributors Say</h2>
           <p className="mb-10 max-w-[620px] text-gray-600">
