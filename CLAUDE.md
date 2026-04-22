@@ -9,6 +9,7 @@ Durable context for Claude sessions on the sarotech-us website. Checked into the
   - **Claude NEVER runs `gh pr merge` on its own PRs.** Stop after `gh pr create`. The PR is a review gate, not a formality. This holds even under time pressure and even in auto mode. If Talha explicitly says "merge it" or "ship it", then merge — otherwise don't.
   - **Claude NEVER edits on `main`.** Run `git checkout -b feat/<name>` (or `fix/<name>`) as the first action of any task. If already mid-edit on main, create the branch immediately — uncommitted changes carry over.
 - **Plain language over jargon.** Explain effect, not concept.
+- **No em dashes in generated copy.** When writing marketing/UI/commit prose, use commas, periods, middots, or sentence breaks. Em dashes in quoted or preserved source material are fine; this applies to anything Claude generates fresh.
 - **Sibling project:** `../brillion-studio-website` (repo `tasidd96/brillion-studio`).
 - **Dev server:** `npm run dev` on port 3001 (`npm run dev -- -p 3001`). PATH may need `/opt/homebrew/bin:$PATH` prefix.
 
