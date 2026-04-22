@@ -2,6 +2,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import TypewriterHeading from "@/components/home/TypewriterHeading";
+
+const FOOTER_TAGLINE_PREFIX = "Next-generation architectural finishes,";
+const FOOTER_TAGLINE_SUFFIXES = [
+  " at your fingertips.",
+  " ready to ship.",
+  " promised to deliver.",
+];
 
 const navLinks = [
   { href: "/locations", label: "Locations" },
@@ -78,18 +86,15 @@ export default function Footer() {
               height={50}
               style={{ width: 50, height: "auto" }}
             />
-            <p
-              style={{
-                fontFamily: "PasticheGrotesque, Arial, sans-serif",
-                fontSize: "1.2rem",
-                margin: 0,
-                lineHeight: 1.4,
-                color: "#fff",
-              }}
-            >
-              Next-generation architectural finishes —{" "}
-              <em>now in America.</em>
-            </p>
+            <TypewriterHeading
+              as="p"
+              prefix={FOOTER_TAGLINE_PREFIX}
+              messages={FOOTER_TAGLINE_SUFFIXES}
+              typeSpeed={45}
+              deleteSpeed={25}
+              holdMs={2600}
+              className="m-0 text-[1.2rem] leading-[1.4] text-white"
+            />
           </div>
 
           {/* Content row — 3 columns */}
