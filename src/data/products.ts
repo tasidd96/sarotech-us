@@ -146,7 +146,7 @@ export const products: Product[] = [
     variantName: "Teak",
     category: "exterior",
     productType: "floor-decking",
-    image: "/images/categories/deck-para-piso.jpg",
+    image: "/images/categories/floor-decking.png",
     featured: true,
   },
   {
@@ -157,7 +157,7 @@ export const products: Product[] = [
     variantName: "Carrara White",
     category: "interior",
     productType: "synthetic-marble",
-    image: "/images/categories/marmol-sintetico.jpg",
+    image: "/images/categories/synthetic-marble.png",
     featured: true,
   },
   {
@@ -168,7 +168,7 @@ export const products: Product[] = [
     variantName: "Natural Wood",
     category: "exterior",
     productType: "coextruded-panels",
-    image: "/images/categories/wall-cladding.jpg",
+    image: "/images/categories/wall-cladding.png",
     featured: true,
   },
   {
@@ -179,7 +179,7 @@ export const products: Product[] = [
     variantName: "Classic Brown",
     category: "interior",
     productType: "coextruded-panels",
-    image: "/images/categories/lambrin-extruido.jpg",
+    image: "/images/categories/extruded-cladding.png",
     featured: true,
   },
   {
@@ -190,7 +190,7 @@ export const products: Product[] = [
     variantName: "White Wave",
     category: "interior",
     productType: "wall-panels",
-    image: "/images/categories/panel-wavy.jpg",
+    image: "/images/categories/wavy-panel.png",
     featured: true,
   },
   {

@@ -4,19 +4,19 @@ export const categories: Category[] = [
   {
     id: "interior",
     name: "Interior",
-    image: "/images/categories/panel-lambrin-laminado.jpg",
+    image: "/images/categories/laminated-cladding-panel.png",
     productCount: 142,
   },
   {
     id: "exterior",
     name: "Exterior",
-    image: "/images/categories/deck-para-piso.jpg",
+    image: "/images/categories/floor-decking.png",
     productCount: 89,
   },
   {
     id: "accessories",
     name: "Accessories",
-    image: "/images/categories/wall-cladding.jpg",
+    image: "/images/categories/wall-cladding.png",
     productCount: 53,
   },
 ];
