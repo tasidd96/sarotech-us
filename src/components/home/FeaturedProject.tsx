@@ -1,3 +1,5 @@
+import ShowcaseRotator from "./ShowcaseRotator";
+
 export default function FeaturedProject() {
   return (
     <section id="projects" className="bg-saro-dark py-12 text-white lg:py-16">
@@ -5,13 +7,7 @@ export default function FeaturedProject() {
         <h2 className="mb-8 text-2xl font-semibold">Why SARO TECH?</h2>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Image */}
-          <div
-            className="aspect-[4/3] rounded-lg bg-cover bg-center"
-            style={{
-              backgroundImage: "url('https://placehold.co/800x600/2D6A4F/ffffff?text=SARO+TECH+USA')",
-            }}
-          />
+          <ShowcaseRotator />
 
           {/* Content */}
           <div className="flex flex-col justify-center">
