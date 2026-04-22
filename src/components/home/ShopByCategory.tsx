@@ -78,16 +78,16 @@ export default function ShopByCategory() {
             <Link
               key={cat.name}
               href={`/products?q=${encodeURIComponent(cat.name)}`}
-              className="category-carousel-item group flex w-[180px] min-w-[180px] flex-shrink-0 snap-start flex-col items-center"
+              className="category-carousel-item group flex w-[220px] min-w-[220px] flex-shrink-0 snap-start flex-col items-center"
             >
-              <div className="category-carousel-image relative mb-2 flex h-[180px] w-full items-center justify-center overflow-hidden rounded bg-[#f0f0f0] transition-transform duration-300 group-hover:scale-[1.03]">
+              <div className="category-carousel-image relative mb-2 flex h-[220px] w-full items-center justify-center overflow-hidden rounded bg-[#f0f0f0] transition-transform duration-300 group-hover:scale-[1.03]">
                 {cat.image ? (
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    className="object-cover"
-                    sizes="180px"
+                    className="object-contain p-4"
+                    sizes="220px"
                     loading="lazy"
                   />
                 ) : (
