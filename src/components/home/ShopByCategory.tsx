@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import DragScrollRow from "@/components/ui/DragScrollRow";
 
 type CarouselCat = { name: string; image?: string };
 
@@ -73,7 +74,7 @@ export default function ShopByCategory() {
 
       {/* Horizontal carousel — full-width, edge-to-edge */}
       <div className="category-carousel-wrapper mb-10 w-full">
-        <div className="category-carousel scrollbar-hide flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-2">
+        <DragScrollRow className="category-carousel scrollbar-hide flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-2">
           {CAROUSEL_CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
@@ -110,7 +111,7 @@ export default function ShopByCategory() {
               </p>
             </Link>
           ))}
-        </div>
+        </DragScrollRow>
       </div>
 
       {/* Main 3-card category grid (Interior / Exterior / Accessories) */}
@@ -134,7 +135,7 @@ export default function ShopByCategory() {
 
                 {/* Pill label — bottom-left, matches sarotech.io exactly */}
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="inline-block rounded-[5px] bg-white/95 px-3 py-2 text-[17.6px] italic font-normal text-black">
+                  <h3 className="inline-block rounded-[5px] bg-white/95 px-3 py-2 text-[17.6px] font-medium text-black">
                     {cat.name}
                   </h3>
                 </div>

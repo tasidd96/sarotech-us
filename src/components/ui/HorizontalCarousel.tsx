@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useDragScroll } from "@/lib/useDragScroll";
 
 type ScrimColor = "white" | "black" | "dark";
 
@@ -23,7 +24,7 @@ export default function HorizontalCarousel({
   scrimColor = "white",
   ariaLabel = "carousel",
 }: Props) {
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const { ref: scrollerRef, dragProps, dragClassName } = useDragScroll<HTMLDivElement>();
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -32,7 +33,7 @@ export default function HorizontalCarousel({
     if (!el) return;
     setCanScrollLeft(el.scrollLeft > 4);
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
+  }, [scrollerRef]);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -44,7 +45,7 @@ export default function HorizontalCarousel({
       el.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
-  }, [updateScrollState]);
+  }, [scrollerRef, updateScrollState]);
 
   const scrollBy = (direction: "left" | "right") => {
     const el = scrollerRef.current;
@@ -98,8 +99,8 @@ export default function HorizontalCarousel({
       </button>
 
       <div
-        ref={scrollerRef}
-        className="scrollbar-hide flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4"
+        {...dragProps}
+        className={`scrollbar-hide flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 ${dragClassName}`}
       >
         {children}
       </div>
