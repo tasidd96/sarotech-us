@@ -158,24 +158,9 @@ export default function ProductsPageClient({
           </aside>
 
           <div className="products-column flex min-w-0 flex-col gap-5">
-            {filtersVisible ? (
-              <SortControls
-                sortBy={sortBy}
-                onSortChange={setSortBy}
-                perPage={perPage}
-                onPerPageChange={(n) => {
-                  setPerPage(n);
-                  setCurrentPage(1);
-                }}
-                filtersVisible={filtersVisible}
-                onToggleFilters={() => setFiltersVisible(!filtersVisible)}
-              />
-            ) : (
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <CategoryTabs
-                  activeCategory={activeCategory}
-                  onCategoryChange={handleCategoryChange}
-                />
+            {/* Desktop-only controls — mobile uses MobileFiltersMenu above */}
+            <div className="hidden lg:block">
+              {filtersVisible ? (
                 <SortControls
                   sortBy={sortBy}
                   onSortChange={setSortBy}
@@ -187,8 +172,26 @@ export default function ProductsPageClient({
                   filtersVisible={filtersVisible}
                   onToggleFilters={() => setFiltersVisible(!filtersVisible)}
                 />
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <CategoryTabs
+                    activeCategory={activeCategory}
+                    onCategoryChange={handleCategoryChange}
+                  />
+                  <SortControls
+                    sortBy={sortBy}
+                    onSortChange={setSortBy}
+                    perPage={perPage}
+                    onPerPageChange={(n) => {
+                      setPerPage(n);
+                      setCurrentPage(1);
+                    }}
+                    filtersVisible={filtersVisible}
+                    onToggleFilters={() => setFiltersVisible(!filtersVisible)}
+                  />
+                </div>
+              )}
+            </div>
 
             <ProductGrid products={paginated} />
 

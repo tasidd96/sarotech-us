@@ -12,11 +12,8 @@ export default function LocationsSection() {
         <div className="locations-list">
           {locations.map((location) => {
             const typeLabel =
-              location.id === "houston" ? "HQ · Warehouse + Office" : "Service Area";
-            const directionQuery =
-              location.id === "houston"
-                ? "1210 Leer Street, Houston, TX"
-                : `${location.city}, ${location.state}`;
+              location.id === "houston" ? "Primary service area" : "Service Area";
+            const directionQuery = `${location.city}, ${location.state}`;
 
             return (
               <div key={location.id} className="location-row animate-in">

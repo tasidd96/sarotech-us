@@ -65,7 +65,7 @@ const MAIN_CATEGORIES = [
 export default function ShopByCategory() {
   return (
     <section className="category-carousel-section bg-white py-12 lg:py-16">
-      <div className="container-lg">
+      <div className="container-std">
         <h3 className="category-carousel-title mb-8 text-[20px] font-semibold text-saro-dark">
           Shop by Category
         </h3>
@@ -114,7 +114,7 @@ export default function ShopByCategory() {
       </div>
 
       {/* Main 3-card category grid (Interior / Exterior / Accessories) */}
-      <div className="container-lg">
+      <div className="container-std">
         <div className="main-categories">
           <div className="categories-grid grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {MAIN_CATEGORIES.map((cat) => (

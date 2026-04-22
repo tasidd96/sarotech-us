@@ -9,7 +9,7 @@ export default function ProjectGallery() {
       <div className="container-std">
         <h2 className="mb-8 text-2xl font-semibold">Our Projects</h2>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {nonFeatured.map((project) => (
             <div key={project.id} className="group relative overflow-hidden rounded-lg">
               <div className="relative aspect-[4/3]">

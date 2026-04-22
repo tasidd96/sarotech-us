@@ -58,7 +58,7 @@ export default function HorizontalCarousel({
   const scrimFrom = SCRIM_FROM[scrimColor];
 
   return (
-    <div className="group/carousel relative">
+    <div className="relative">
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r ${scrimFrom} to-transparent transition-opacity duration-200 ${
@@ -77,9 +77,7 @@ export default function HorizontalCarousel({
         aria-label={`Scroll ${ariaLabel} left`}
         onClick={() => scrollBy("left")}
         className={`absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-saro-green text-white shadow-lg transition-all duration-200 hover:bg-saro-green-light focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-          canScrollLeft
-            ? "opacity-0 group-hover/carousel:opacity-100"
-            : "pointer-events-none opacity-0"
+          canScrollLeft ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -91,9 +89,7 @@ export default function HorizontalCarousel({
         aria-label={`Scroll ${ariaLabel} right`}
         onClick={() => scrollBy("right")}
         className={`absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-saro-green text-white shadow-lg transition-all duration-200 hover:bg-saro-green-light focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
-          canScrollRight
-            ? "opacity-0 group-hover/carousel:opacity-100"
-            : "pointer-events-none opacity-0"
+          canScrollRight ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
