@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ElementType, useEffect, useState } from "react";
 
 type Props = {
   /** Static text rendered on every frame (e.g. "Next-generation finishes,"). */
@@ -8,6 +8,8 @@ type Props = {
   /** Variable endings that get typed in and deleted in rotation. */
   messages: string[];
   className?: string;
+  /** Element tag to render (defaults to h1). Use "p" or "span" in body copy. */
+  as?: ElementType;
   /** ms per character while typing */
   typeSpeed?: number;
   /** ms per character while deleting */
@@ -20,6 +22,7 @@ export default function TypewriterHeading({
   prefix = "",
   messages,
   className = "",
+  as,
   typeSpeed = 55,
   deleteSpeed = 30,
   holdMs = 2200,
@@ -60,8 +63,10 @@ export default function TypewriterHeading({
   // every frame so only the suffix varies.
   const longestSuffix = messages.reduce((a, b) => (a.length >= b.length ? a : b));
 
+  const Tag = (as ?? "h1") as ElementType;
+
   return (
-    <h1 className={`relative ${className}`}>
+    <Tag className={`relative ${className}`}>
       {/* Invisible sizer: prefix + longest suffix. Reserves enough vertical
           space to keep mobile height stable across typing/deleting. */}
       <span aria-hidden className="invisible block whitespace-pre-wrap">
@@ -78,6 +83,6 @@ export default function TypewriterHeading({
           style={{ height: "0.9em" }}
         />
       </span>
-    </h1>
+    </Tag>
   );
 }

@@ -75,7 +75,7 @@ const REQUIREMENTS = [
 // green check. Strings render as text. null renders as an empty cell.
 type Cell = boolean | string | null;
 const BENEFIT_ROWS: { label: string; cells: [Cell, Cell, Cell, Cell] }[] = [
-  { label: "Monthly purchase minimum", cells: ["Contact for details", "Contact for details", "Contact for details", "Contact for details"] },
+  { label: "Monthly purchase minimum", cells: [null, "$7,500 - $15,000", "$15,000 - $60,000", "$60,000+"] },
   { label: "Base distributor discount", cells: [true, true, true, true] },
   { label: "Product catalog access", cells: [true, true, true, true] },
   { label: "Promotional materials", cells: [true, true, true, true] },
@@ -107,7 +107,7 @@ export default function SaroRewardsPage() {
     <>
       {/* Hero row 1: decorative interior band with Rewards logo overlay */}
       <section className="relative bg-saro-dark text-white">
-        <div className="relative h-[240px] w-full overflow-hidden lg:h-[380px]">
+        <div className="relative h-[360px] w-full overflow-hidden sm:h-[420px] lg:h-[540px]">
           <Image
             src="/images/rewards/hero-bg.png"
             alt="SARO TECH interior showcase"
@@ -122,7 +122,7 @@ export default function SaroRewardsPage() {
               alt="SARO TECH Rewards"
               width={1400}
               height={680}
-              className="h-auto w-[200px] sm:w-[240px] lg:w-[300px]"
+              className="h-auto w-[320px] sm:w-[440px] lg:w-[560px]"
               priority
             />
           </div>
@@ -287,9 +287,9 @@ export default function SaroRewardsPage() {
 
           <div className="overflow-x-auto rounded-lg border border-gray-200">
             <table className="w-full min-w-[760px] text-sm">
-              <thead className="bg-gray-50">
-                <tr className="border-b border-gray-200">
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <thead className="bg-saro-dark">
+                <tr className="border-b border-gray-800">
+                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-white">
                     Benefit
                   </th>
                   {TIER_BADGES.map((t) => (
@@ -301,7 +301,7 @@ export default function SaroRewardsPage() {
                         height={45}
                         className="mx-auto h-10 w-auto"
                       />
-                      <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-700">
+                      <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-white">
                         {t.name}
                       </div>
                     </th>
@@ -350,8 +350,8 @@ export default function SaroRewardsPage() {
           </div>
 
           <p className="mt-4 text-xs text-gray-500">
-            Monthly purchase minimums for each tier will be announced when the U.S.
-            distributor program launches. Contact us for current details.
+            Tier placement is reviewed quarterly based on monthly purchase volume.
+            Contact us to discuss fit and timing.
           </p>
         </div>
       </section>
