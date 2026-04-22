@@ -7,6 +7,7 @@ Durable context for Claude sessions on the sarotech-us website. Checked into the
 - **GitHub:** `tasidd96`. Repo: `tasidd96/sarotech-us` (local dir is `sarotech-us-website`).
 - **Git workflow:** short-lived branch → PR → merge → delete. No long-lived branches, no rebase, no force-push.
 - **Plain language over jargon.** Explain effect, not concept.
+- **No em dashes in generated copy.** When writing marketing/UI/commit prose, use commas, periods, middots, or sentence breaks. Em dashes in quoted or preserved source material are fine; this applies to anything Claude generates fresh.
 - **Sibling project:** `../brillion-studio-website` (repo `tasidd96/brillion-studio`).
 - **Dev server:** `npm run dev` on port 3001 (`npm run dev -- -p 3001`). PATH may need `/opt/homebrew/bin:$PATH` prefix.
 
