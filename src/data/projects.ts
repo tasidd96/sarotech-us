@@ -56,4 +56,35 @@ export const projects: Project[] = [
     image: "/images/projects/residencia-fachada.jpg",
     description: "Exterior facade with modern cladding solutions.",
   },
+  {
+    id: "fs-exxon-bay-city",
+    name: "Exxon, Bay City",
+    image: "/images/projects/fuel_stations/exxon-bay-city/exxon-bay-city-01.jpg",
+    description: "Canopy and facade install at Exxon in Bay City, TX.",
+    category: "fuel-station",
+  },
+  {
+    id: "fs-fastime-copperas-cove",
+    name: "FASTIME, Copperas Cove",
+    image:
+      "/images/projects/fuel_stations/fastime-copperas-cove/fastime-copperas-cove-01.jpg",
+    description: "Exterior cladding refit at FASTIME in Copperas Cove, TX.",
+    category: "fuel-station",
+  },
+  {
+    id: "fs-happys-port-arthur",
+    name: "Happy's, Port Arthur",
+    image:
+      "/images/projects/fuel_stations/happys-port-arthur/happys-port-arthur-01.jpg",
+    description: "Full-facade build at Happy's in Port Arthur, TX.",
+    category: "fuel-station",
+  },
+  {
+    id: "fs-king-fuels-kingwood",
+    name: "King Fuels, Kingwood",
+    image:
+      "/images/projects/fuel_stations/king-fuels-kingwood/king-fuels-kingwood-01.jpg",
+    description: "New-build install at King Fuels in Kingwood, TX.",
+    category: "fuel-station",
+  },
 ];

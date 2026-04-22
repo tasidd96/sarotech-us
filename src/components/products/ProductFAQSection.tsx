@@ -25,8 +25,8 @@ export default function ProductFAQSection({ productName }: Props) {
       a: "All SARO TECH finishes are covered by a limited manufacturing-defect warranty. Warranty duration varies by product line — refer to the Support Material on this page or contact us for the current terms.",
     },
     {
-      q: "How many square meters does one box cover?",
-      a: "Coverage is printed on the product page (see Size / Presentation). For the Laminated Wall Panel family, one box typically covers ~6.46 m² at 14 pieces per box.",
+      q: "How many square feet does one box cover?",
+      a: "Coverage is printed on the product page (see Size / Presentation). For the Laminated Wall Panel family, one box typically covers ~69.5 ft² at 14 pieces per box.",
     },
   ];
 
@@ -34,7 +34,7 @@ export default function ProductFAQSection({ productName }: Props) {
 
   return (
     <div className="seo-enrichment-container bg-[#fafafa] py-12">
-      <div className="seo-faq-wrapper container-lg">
+      <div className="seo-faq-wrapper container-std">
         <div className="faq-section-container">
           <h3 className="faq-section-title mb-6 text-center text-[20px] font-semibold text-saro-dark">
             Frequently Asked Questions

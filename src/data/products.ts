@@ -1,4 +1,22 @@
-import { Product } from "@/lib/types";
+import { Product, ProductDetail } from "@/lib/types";
+
+/**
+ * Shared specs for the Laminated Wall Panel family. All A-series variants
+ * share the same physical panel geometry — only finish/tone differs.
+ * Placeholder tech sheet + install guide until we host the real PDFs.
+ */
+const laminatedWallPanelBase: Partial<ProductDetail> = {
+  dimensions: { heightIn: 114.2, widthIn: 6.1, thicknessIn: 0.71 },
+  piecesPerBox: 14,
+  sqftPerBox: 69.5,
+  description:
+    "Add warmth and elegance to your walls or ceilings with this fluted laminated cladding. With a coverage of 69.5 ft² per box, its easy installation and realistic finish transform interiors with premium architectural depth and lasting durability.",
+  techSheetUrl:
+    "/technical_sheets/Technical Data Sheet - Coextruded WPC Wall Panel.pdf",
+  installGuideUrl:
+    "/installation_guides/Interior Ribbed Wall Paneling Installation Guide.pdf",
+  technicalDrawingUrl: "/images/technical-drawings/laminated-wall-panel.png",
+};
 
 export const products: Product[] = [
   {
@@ -12,13 +30,9 @@ export const products: Product[] = [
     image: "/images/products/a02-nogal-natural.png",
     featured: true,
     detail: {
+      ...laminatedWallPanelBase,
       toneFamily: "Natural Tones",
       swatchColor: "#6f4a2d",
-      dimensions: { heightCm: 290, widthCm: 15.5, thicknessCm: 1.8 },
-      piecesPerBox: 14,
-      m2PerBox: 6.4554,
-      description:
-        "Add warmth and elegance to your walls or ceilings with this fluted laminated cladding. With a coverage of 6.4554 m² per box, its easy installation and realistic finish transform interiors with premium architectural depth and lasting durability.",
     },
   },
   {
@@ -30,7 +44,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a09-encino.png",
-    detail: { toneFamily: "Natural Tones", swatchColor: "#e4d5b7" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Natural Tones",
+      swatchColor: "#e4d5b7",
+    },
   },
   {
     id: "3",
@@ -41,7 +59,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a103-parota.png",
-    detail: { toneFamily: "Natural Tones", swatchColor: "#8a6a55" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Natural Tones",
+      swatchColor: "#8a6a55",
+    },
   },
   {
     id: "4",
@@ -52,7 +74,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a109-white-oak.png",
-    detail: { toneFamily: "Light Tones", swatchColor: "#eae0cd" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Light Tones",
+      swatchColor: "#eae0cd",
+    },
   },
   {
     id: "5",
@@ -63,7 +89,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a46-parota-black.png",
-    detail: { toneFamily: "Dark Tones", swatchColor: "#3a2a22" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Dark Tones",
+      swatchColor: "#3a2a22",
+    },
   },
   {
     id: "6",
@@ -74,7 +104,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a56-pino-black.png",
-    detail: { toneFamily: "Dark Tones", swatchColor: "#1f1a17" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Dark Tones",
+      swatchColor: "#1f1a17",
+    },
   },
   {
     id: "7",
@@ -85,7 +119,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a46-parota-black.png",
-    detail: { toneFamily: "Dark Tones", swatchColor: "#2a2520" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Dark Tones",
+      swatchColor: "#2a2520",
+    },
   },
   {
     id: "8",
@@ -96,7 +134,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a109-white-oak.png",
-    detail: { toneFamily: "Gray Tones", swatchColor: "#8a8a8a" },
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Gray Tones",
+      swatchColor: "#8a8a8a",
+    },
   },
   {
     id: "9",
@@ -107,6 +149,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a02-nogal-natural.png",
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Natural Tones",
+      swatchColor: "#6a4a30",
+    },
   },
   {
     id: "10",
@@ -117,6 +164,11 @@ export const products: Product[] = [
     category: "interior",
     productType: "wall-panels",
     image: "/images/products/a09-encino.png",
+    detail: {
+      ...laminatedWallPanelBase,
+      toneFamily: "Gray Tones",
+      swatchColor: "#7c7a78",
+    },
   },
   {
     id: "11",
@@ -127,6 +179,14 @@ export const products: Product[] = [
     category: "interior",
     productType: "wide-wall-panels",
     image: "/images/products/a103-parota.png",
+    detail: {
+      toneFamily: "Dark Tones",
+      swatchColor: "#3e2a1e",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded WPC Wall Panel.pdf",
+      installGuideUrl:
+        "/installation_guides/Interior Ribbed Wall Paneling Installation Guide.pdf",
+    },
   },
   {
     id: "12",
@@ -137,6 +197,14 @@ export const products: Product[] = [
     category: "interior",
     productType: "wide-wall-panels",
     image: "/images/products/a02-nogal-natural.png",
+    detail: {
+      toneFamily: "Natural Tones",
+      swatchColor: "#6f4a2d",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded WPC Wall Panel.pdf",
+      installGuideUrl:
+        "/installation_guides/Interior Ribbed Wall Paneling Installation Guide.pdf",
+    },
   },
   {
     id: "13",
@@ -148,6 +216,14 @@ export const products: Product[] = [
     productType: "floor-decking",
     image: "/images/categories/floor-decking.png",
     featured: true,
+    detail: {
+      toneFamily: "Natural Tones",
+      swatchColor: "#8b5a2b",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded Decking Floor.pdf",
+      installGuideUrl: "/installation_guides/Decking Installation Guide.pdf",
+      technicalDrawingUrl: "/images/technical-drawings/wpc-floor-decking.png",
+    },
   },
   {
     id: "14",
@@ -159,6 +235,14 @@ export const products: Product[] = [
     productType: "synthetic-marble",
     image: "/images/categories/synthetic-marble.png",
     featured: true,
+    detail: {
+      toneFamily: "Light Tones",
+      swatchColor: "#eeeae4",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Synthetic Marble Sheet- interior.pdf",
+      installGuideUrl:
+        "/installation_guides/Synthetic Marble Installation Guide.pdf",
+    },
   },
   {
     id: "15",
@@ -170,6 +254,15 @@ export const products: Product[] = [
     productType: "coextruded-panels",
     image: "/images/categories/wall-cladding.png",
     featured: true,
+    detail: {
+      toneFamily: "Natural Tones",
+      swatchColor: "#8a6a50",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded Wall Cladding.pdf",
+      installGuideUrl:
+        "/installation_guides/Wall Cladding Installation Guide.pdf",
+      technicalDrawingUrl: "/images/technical-drawings/wall-cladding.png",
+    },
   },
   {
     id: "16",
@@ -181,6 +274,14 @@ export const products: Product[] = [
     productType: "coextruded-panels",
     image: "/images/categories/extruded-cladding.png",
     featured: true,
+    detail: {
+      toneFamily: "Dark Tones",
+      swatchColor: "#5a3d2a",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded WPC Wall Panel.pdf",
+      installGuideUrl:
+        "/installation_guides/Co-Extruded Exterior Cladding Installation Guide.pdf",
+    },
   },
   {
     id: "17",
@@ -192,6 +293,12 @@ export const products: Product[] = [
     productType: "wall-panels",
     image: "/images/categories/wavy-panel.png",
     featured: true,
+    detail: {
+      toneFamily: "Light Tones",
+      swatchColor: "#f4f1ec",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded Light WPC Wall Panel.pdf",
+    },
   },
   {
     id: "18",
@@ -202,6 +309,9 @@ export const products: Product[] = [
     category: "accessories",
     productType: "deck-accessories",
     image: "/images/products/a56-pino-black.png",
+    detail: {
+      swatchColor: "#1f1a17",
+    },
   },
   {
     id: "19",
@@ -212,6 +322,11 @@ export const products: Product[] = [
     category: "accessories",
     productType: "corner-pieces",
     image: "/images/products/a103-parota.png",
+    detail: {
+      swatchColor: "#8a6a55",
+      techSheetUrl:
+        "/technical_sheets/Technical Data Sheet - Coextruded Angle Trim.pdf",
+    },
   },
   {
     id: "20",
@@ -222,6 +337,9 @@ export const products: Product[] = [
     category: "accessories",
     productType: "clips",
     image: "/images/products/a109-white-oak.png",
+    detail: {
+      swatchColor: "#eae0cd",
+    },
   },
 ];
 

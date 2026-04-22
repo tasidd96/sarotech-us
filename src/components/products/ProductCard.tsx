@@ -14,12 +14,12 @@ export default function ProductCard({ product }: { product: Product }) {
       href={href}
       className="products-page-card group flex w-full flex-col transition-transform duration-200 hover:-translate-y-[2px]"
     >
-      <div className="products-page-image relative flex h-[270px] w-full items-center justify-center overflow-hidden bg-gray-100">
+      <div className="products-page-image relative flex aspect-square w-full items-center justify-center overflow-hidden bg-gray-100 sm:h-[270px] sm:aspect-auto">
         <Image
           src={product.image}
           alt={`${product.sku}-${product.variantName}`}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03] sm:p-0 sm:object-cover"
           sizes="(min-width: 1024px) 252px, (min-width: 640px) 50vw, 100vw"
         />
       </div>

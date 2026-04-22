@@ -13,6 +13,8 @@ export const metadata = {
 
 export default function ProjectsPage() {
   const related = products.filter((p) => p.featured);
+  const fuelStations = projects.filter((p) => p.category === "fuel-station");
+  const featuredProjects = projects.filter((p) => p.category !== "fuel-station");
 
   return (
     <>
@@ -42,7 +44,7 @@ export default function ProjectsPage() {
           <h2 className="mb-8 text-2xl font-semibold">Featured Projects</h2>
 
           <HorizontalCarousel ariaLabel="projects" scrollStep={324}>
-            {projects.map((project) => (
+            {featuredProjects.map((project) => (
               <article
                 key={project.id}
                 className="w-[300px] min-w-[300px] snap-start flex-shrink-0"
@@ -67,6 +69,45 @@ export default function ProjectsPage() {
           </HorizontalCarousel>
         </div>
       </section>
+
+      {fuelStations.length > 0 && (
+        <section className="border-t border-gray-100 py-12 lg:py-16">
+          <div className="container-std">
+            <h2 className="mb-2 text-2xl font-semibold">
+              Fuel Station Installations
+            </h2>
+            <p className="mb-8 max-w-[620px] text-gray-600">
+              Canopy systems, facades, and column cladding built for the
+              day-in, day-out life of a Texas fuel station.
+            </p>
+
+            <HorizontalCarousel ariaLabel="fuel station projects" scrollStep={324}>
+              {fuelStations.map((station) => (
+                <article
+                  key={station.id}
+                  className="w-[300px] min-w-[300px] snap-start flex-shrink-0"
+                >
+                  <div className="relative mb-3 h-[220px] w-[300px] overflow-hidden rounded-lg bg-gray-200">
+                    <Image
+                      src={station.image}
+                      alt={station.name}
+                      fill
+                      className="object-cover"
+                      sizes="300px"
+                    />
+                  </div>
+                  <h3 className="text-sm font-semibold">{station.name}</h3>
+                  {station.description && (
+                    <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                      {station.description}
+                    </p>
+                  )}
+                </article>
+              ))}
+            </HorizontalCarousel>
+          </div>
+        </section>
+      )}
 
       <section className="border-t border-gray-100 py-12 lg:py-16">
         <div className="container-std">

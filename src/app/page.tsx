@@ -5,6 +5,7 @@ import PopularProducts from "@/components/home/PopularProducts";
 import ShopByCategory from "@/components/home/ShopByCategory";
 import ProjectGallery from "@/components/home/ProjectGallery";
 import FeaturedProject from "@/components/home/FeaturedProject";
+import CorporatePresentation from "@/components/home/CorporatePresentation";
 import LocationsSection from "@/components/home/LocationsSection";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function Home() {
       <PopularProducts />
       <ShopByCategory />
       <FeaturedProject />
+      <CorporatePresentation />
       <LocationsSection />
       <ProjectGallery />
     </>

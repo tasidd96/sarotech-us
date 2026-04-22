@@ -3,10 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCatalog } from "@/lib/catalog";
-import { findVariant, findProductVariants, variantSlug } from "@/lib/slug";
+import { findVariant, findProductVariants } from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
 import ProductFAQSection from "@/components/products/ProductFAQSection";
+import ToneSelector from "@/components/products/ToneSelector";
+import { formatInches } from "@/lib/units";
 
 type PageParams = { productSlug: string; variantSlug: string };
 
@@ -62,9 +64,51 @@ export default async function ProductVariantPage({
   return (
     <>
       <div className="product-detail-page">
-        <main className="product-detail-main container-lg">
+        <main className="product-detail-main container-std pt-6">
+          {/* Breadcrumb */}
+          <nav
+            aria-label="Breadcrumb"
+            className="product-breadcrumb mb-4 text-[13px] text-gray-500"
+          >
+            <ol className="flex flex-wrap items-center gap-1.5">
+              <li>
+                <Link href="/" className="hover:text-saro-green hover:underline">
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true" className="text-gray-400">
+                ›
+              </li>
+              <li>
+                <Link
+                  href="/products"
+                  className="hover:text-saro-green hover:underline"
+                >
+                  Products
+                </Link>
+              </li>
+              <li aria-hidden="true" className="text-gray-400">
+                ›
+              </li>
+              <li>
+                <Link
+                  href={`/products?tab=${variant.category}`}
+                  className="hover:text-saro-green hover:underline"
+                >
+                  {CATEGORY_LABEL[variant.category]}
+                </Link>
+              </li>
+              <li aria-hidden="true" className="text-gray-400">
+                ›
+              </li>
+              <li className="text-saro-dark" aria-current="page">
+                {variant.name}
+              </li>
+            </ol>
+          </nav>
+
           <div
-            className="product-detail-container mx-auto grid grid-cols-1 gap-10 px-4 pb-5 pt-6 md:px-8 lg:grid-cols-[420px_512px] lg:gap-10"
+            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[420px_minmax(0,1fr)] lg:gap-12"
           >
             {/* LEFT COLUMN — title block + main image */}
             <div className="product-left-column flex flex-col gap-[30px]">
@@ -82,7 +126,7 @@ export default async function ProductVariantPage({
                 </span>
               </div>
 
-              <div className="product-image-section relative mx-auto h-[500px] w-full max-w-[420px]">
+              <div className="product-image-section relative mx-auto h-[340px] w-full max-w-[420px] sm:h-[420px] lg:h-[500px]">
                 <Image
                   src={variant.image}
                   alt={`${variant.name} — ${variant.variantName}`}
@@ -96,70 +140,15 @@ export default async function ProductVariantPage({
 
             {/* RIGHT COLUMN — variant selector + specs */}
             <div className="product-right-column flex flex-col gap-[25px] pt-5">
-              {/* Tone dropdown + variant code */}
-              <div className="product-code-section flex items-center justify-between border-t-2 border-black p-[10px]">
-                <div className="product-tone-dropdown-container flex items-center gap-2 text-[16px]">
-                  <span className="text-saro-dark">Tone:</span>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 underline-offset-2 hover:underline"
-                    aria-label="Change tone family"
-                  >
-                    <span className="underline">{toneFamily}</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
-                </div>
-                <span className="product-finish-name text-[14.4px] text-saro-dark">
-                  {variantCode}
-                </span>
-              </div>
+              <ToneSelector
+                siblings={siblings}
+                currentSku={variant.sku}
+                productSlug={productSlug}
+                activeToneFamily={toneFamily}
+                variantCode={variantCode}
+              />
 
-              {/* Tone swatches */}
-              <div className="product-finish-section has-scroll flex flex-col gap-4 px-[10px]">
-                <p className="text-[14.4px] text-gray-600">
-                  Select the tone you&apos;re looking for
-                </p>
-                <div className="carousel-arrows-container flex items-center gap-3 overflow-x-auto pb-1">
-                  {siblings.map((s) => {
-                    const isActive = s.sku === variant.sku;
-                    const swatch = s.detail?.swatchColor ?? "#c9c9c9";
-                    const sSlug = variantSlug(s);
-                    return (
-                      <Link
-                        key={s.sku}
-                        href={`/products/${productSlug}/${sSlug}`}
-                        aria-label={`${s.sku}-${s.variantName}`}
-                        aria-current={isActive ? "true" : undefined}
-                        className={`relative h-[56px] w-[56px] flex-shrink-0 overflow-hidden rounded-full border-2 transition-all duration-200 hover:scale-105 ${
-                          isActive
-                            ? "border-saro-green shadow-md"
-                            : "border-transparent hover:border-gray-300"
-                        }`}
-                        style={{ backgroundColor: swatch }}
-                      >
-                        <span className="sr-only">
-                          {s.sku}-{s.variantName}
-                        </span>
-                      </Link>
-                    );
-                  })}
-                </div>
-                <p className="text-center text-[12px] text-gray-400">
-                  ← Swipe to see more →
-                </p>
-              </div>
+
 
               {/* Size */}
               <div className="product-size-section flex items-start justify-between border-t-2 border-black p-[10px]">
@@ -168,11 +157,11 @@ export default async function ProductVariantPage({
                 </span>
                 {dims ? (
                   <div className="size-details text-right text-[14.4px] text-saro-dark">
-                    Height: {dims.heightCm} cm
+                    Height: {formatInches(dims.heightIn)}
                     <br />
-                    Width: {dims.widthCm} cm
+                    Width: {formatInches(dims.widthIn)}
                     <br />
-                    Thickness: {dims.thicknessCm} cm
+                    Thickness: {formatInches(dims.thicknessIn)}
                   </div>
                 ) : (
                   <div className="size-details text-right text-[14.4px] text-gray-400">
@@ -200,13 +189,32 @@ export default async function ProductVariantPage({
                   {piecesPerBox ? `${piecesPerBox} pieces per box` : "—"}
                 </span>
               </div>
+
+              {/* CTAs */}
+              <div className="product-cta-section mt-2 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href={`/contact?product=${encodeURIComponent(
+                    variant.name
+                  )}&variant=${encodeURIComponent(variantCode)}`}
+                  className="inline-flex flex-1 items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light"
+                >
+                  Get a Quote
+                </Link>
+                <a
+                  href="#calculator"
+                  className="inline-flex flex-1 items-center justify-center rounded border border-saro-dark px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-saro-dark transition-colors hover:bg-saro-dark hover:text-white"
+                >
+                  Calculate Material
+                </a>
+              </div>
             </div>
           </div>
         </main>
 
         {/* Section 2 — Calculator band (full-width gray background) */}
         <MaterialCalculator
-          m2PerBox={variant.detail?.m2PerBox}
+          dimensions={dims}
+          sqftPerBox={variant.detail?.sqftPerBox}
           piecesPerBox={piecesPerBox}
           productName={variant.name}
           variantCode={variantCode}
