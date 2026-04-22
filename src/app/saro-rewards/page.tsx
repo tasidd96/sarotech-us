@@ -70,6 +70,38 @@ const REQUIREMENTS = [
   "Photos of your storefront or showroom (if applicable)",
 ];
 
+// Tier benefit breakdown — adapted from sarotech.io's comparison table.
+// Each row: [label, bronze, silver, gold, platinum]. Booleans render as a
+// green check. Strings render as text. null renders as an empty cell.
+type Cell = boolean | string | null;
+const BENEFIT_ROWS: { label: string; cells: [Cell, Cell, Cell, Cell] }[] = [
+  { label: "Monthly purchase minimum", cells: ["Contact for details", "Contact for details", "Contact for details", "Contact for details"] },
+  { label: "Base distributor discount", cells: [true, true, true, true] },
+  { label: "Product catalog access", cells: [true, true, true, true] },
+  { label: "Promotional materials", cells: [true, true, true, true] },
+  { label: "Distributor portal access", cells: [true, true, true, true] },
+  { label: "Training", cells: ["Onboarding", "Onboarding + Semiannual", "Onboarding + Semiannual", "Onboarding + Bimonthly + Semiannual"] },
+  { label: "Distributor directory listing", cells: [null, true, true, true] },
+  { label: "Event & trade show perks", cells: [null, true, true, true] },
+  { label: "Dedicated account executive", cells: [null, null, true, true] },
+  { label: "Displays & sample kits", cells: [null, null, true, true] },
+  { label: "Social media campaign support", cells: [null, null, true, true] },
+  { label: "CRM + quoting platform", cells: [null, null, true, true] },
+  { label: "Free regional shipping", cells: [null, null, null, true] },
+  { label: "Priority inventory access", cells: [null, null, null, true] },
+  { label: "Early product launches", cells: [null, null, null, true] },
+  { label: "Commercial event support", cells: [null, null, null, true] },
+  { label: "On-site activations", cells: [null, null, null, true] },
+  { label: "Event participation support", cells: [null, null, null, true] },
+];
+
+const TIER_BADGES = [
+  { name: "Bronze", image: "/images/rewards/tier-bronze.png" },
+  { name: "Silver", image: "/images/rewards/tier-silver.png" },
+  { name: "Gold", image: "/images/rewards/tier-gold.png" },
+  { name: "Platinum", image: "/images/rewards/tier-platinum.png" },
+];
+
 export default function SaroRewardsPage() {
   return (
     <>
@@ -183,6 +215,163 @@ export default function SaroRewardsPage() {
                 Start Your Application
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 4: Founding Distributors (partner showcase placeholder) */}
+      <section className="bg-gray-50 py-12 lg:py-16">
+        <div className="container-lg">
+          <h2 className="mb-2 text-2xl font-semibold">Founding Distributors</h2>
+          <p className="mb-10 max-w-[620px] text-gray-600">
+            The inaugural U.S. cohort is just opening. Apply now to be among the
+            founding partners and claim priority tier placement.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((slot) => (
+              <div
+                key={slot}
+                className="flex h-[140px] items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500"
+              >
+                Founding partner slot open
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/contact"
+              className="inline-block rounded border border-saro-green px-8 py-3 text-sm font-semibold text-saro-green transition-colors hover:bg-saro-green hover:text-white"
+            >
+              Apply as a Founding Distributor
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 5: Tier benefits breakdown (comparison table) */}
+      <section className="py-12 lg:py-16">
+        <div className="container-lg">
+          <h2 className="mb-2 text-2xl font-semibold">Tier Benefits Breakdown</h2>
+          <p className="mb-10 max-w-[620px] text-gray-600">
+            Every tier adds more. Here is how the four levels compare side by side.
+          </p>
+
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead className="bg-gray-50">
+                <tr className="border-b border-gray-200">
+                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Benefit
+                  </th>
+                  {TIER_BADGES.map((t) => (
+                    <th key={t.name} className="p-4 text-center">
+                      <Image
+                        src={t.image}
+                        alt={t.name}
+                        width={90}
+                        height={45}
+                        className="mx-auto h-10 w-auto"
+                      />
+                      <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-700">
+                        {t.name}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {BENEFIT_ROWS.map((row, i) => (
+                  <tr
+                    key={row.label}
+                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
+                  >
+                    <td className="p-4 text-left font-medium text-gray-900">
+                      {row.label}
+                    </td>
+                    {row.cells.map((cell, ci) => (
+                      <td key={ci} className="p-4 text-center text-gray-700">
+                        {cell === true ? (
+                          <svg
+                            aria-label="included"
+                            className="mx-auto text-saro-green"
+                            width={18}
+                            height={18}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2.5}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : cell === null ? (
+                          <span aria-label="not included" className="text-gray-300">
+                            {"\u2013"}
+                          </span>
+                        ) : (
+                          <span className="text-xs leading-tight">{cell}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-4 text-xs text-gray-500">
+            Monthly purchase minimums for each tier will be announced when the U.S.
+            distributor program launches. Contact us for current details.
+          </p>
+        </div>
+      </section>
+
+      {/* Section 6: Big CTA banner */}
+      <section className="bg-saro-dark py-16 text-white lg:py-24">
+        <div className="container-lg text-center">
+          <h2 className="mb-4 text-3xl font-semibold leading-tight lg:text-4xl">
+            Ready to become a SARO distributor?
+          </h2>
+          <p className="mx-auto mb-8 max-w-[620px] text-gray-300">
+            Apply to SARO Rewards and build a partnership that grows with your
+            business. Approvals within two business days.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-block rounded bg-saro-green px-10 py-4 text-base font-semibold text-white transition-colors hover:bg-saro-green-light"
+          >
+            I want to be a distributor
+          </Link>
+        </div>
+      </section>
+
+      {/* Section 7: Testimonials (placeholder) */}
+      <section className="py-12 lg:py-16">
+        <div className="container-lg">
+          <h2 className="mb-2 text-2xl font-semibold">What Our Distributors Say</h2>
+          <p className="mb-10 max-w-[620px] text-gray-600">
+            Testimonials from our founding U.S. distributors will land here as the
+            program ramps up.
+          </p>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {[1, 2].map((slot) => (
+              <blockquote
+                key={slot}
+                className="rounded-lg border-2 border-dashed border-gray-200 bg-white p-6"
+              >
+                <p className="mb-4 text-sm italic text-gray-500">
+                  Your testimonial here. Apply to SARO Rewards and share your
+                  experience with us.
+                </p>
+                <footer className="text-xs uppercase tracking-wider text-gray-400">
+                  Founding distributor &middot; Coming soon
+                </footer>
+              </blockquote>
+            ))}
           </div>
         </div>
       </section>
