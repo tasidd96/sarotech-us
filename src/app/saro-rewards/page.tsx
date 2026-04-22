@@ -1,26 +1,27 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
   title: "SARO Rewards | SARO TECH",
   description:
-    "The SARO TECH distributor loyalty program — grow your business with tiered benefits, training, and dedicated support.",
+    "The SARO TECH distributor loyalty program. Grow your business with tiered benefits, training, and dedicated support.",
 };
 
 const TIERS = [
   {
     name: "Bronze",
-    tagline: "Starter",
+    tagline: "Just starting",
     description: "Onboard to SARO TECH with access to our full catalog and core distributor tools.",
   },
   {
     name: "Silver",
-    tagline: "Growing",
+    tagline: "Building volume",
     description:
       "Unlock promotional materials, initial training, and expanded product access.",
   },
   {
     name: "Gold",
-    tagline: "Established",
+    tagline: "Proven partner",
     description:
       "Assigned account executive, semiannual training, and priority inventory access.",
   },
@@ -36,7 +37,7 @@ const TIERS = [
 const BENEFITS = [
   {
     title: "Broad Product Inventory",
-    body: "Access to our full catalog of architectural finishes — decking, cladding, paneling, and accessories.",
+    body: "Access to our full catalog of architectural finishes: decking, cladding, paneling, and accessories.",
   },
   {
     title: "Personalized Advisory",
@@ -75,20 +76,31 @@ export default function SaroRewardsPage() {
       <section className="bg-saro-dark py-20 text-white lg:py-28">
         <div className="container-lg">
           <p className="mb-2 text-sm tracking-wider text-saro-green-light">
-            Partner With Us
+            Distributor Program
           </p>
           <h1 className="mb-4 max-w-[700px] text-[40px] font-semibold leading-tight">
             SARO Rewards
           </h1>
           <p className="mb-8 max-w-[620px] text-[15px] leading-relaxed text-gray-300">
-            Our distributor loyalty program is built to grow with your business.
-            Four tiers, real benefits, and a team that invests in your success.
+            Grow with SARO TECH. Four tiers, real benefits, and a team invested in your business.
           </p>
+
+          <div className="relative mb-8 w-full max-w-[900px]">
+            <Image
+              src="/images/rewards/tier-levels.png"
+              alt="SARO Rewards tiers: Bronze, Silver, Gold, Platinum"
+              width={1600}
+              height={277}
+              className="h-auto w-full"
+              priority
+            />
+          </div>
+
           <Link
             href="/contact"
             className="inline-block rounded bg-saro-green px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-saro-green-light"
           >
-            Become a Distributor
+            Start Your Application
           </Link>
         </div>
       </section>
@@ -97,7 +109,7 @@ export default function SaroRewardsPage() {
         <div className="container-lg">
           <h2 className="mb-2 text-2xl font-semibold">Four Tiers, One Partnership</h2>
           <p className="mb-10 max-w-[620px] text-gray-600">
-            Start where it makes sense for your business &mdash; every tier unlocks
+            Start where it makes sense for your business. Every tier unlocks
             more support, training, and benefits as you scale with SARO TECH.
           </p>
 
