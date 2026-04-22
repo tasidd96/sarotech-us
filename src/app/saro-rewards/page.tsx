@@ -287,9 +287,9 @@ export default function SaroRewardsPage() {
 
           <div className="overflow-x-auto rounded-lg border border-gray-200">
             <table className="w-full min-w-[760px] text-sm">
-              <thead className="bg-gray-50">
-                <tr className="border-b border-gray-200">
-                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <thead className="bg-saro-dark">
+                <tr className="border-b border-gray-800">
+                  <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-white">
                     Benefit
                   </th>
                   {TIER_BADGES.map((t) => (
@@ -301,7 +301,7 @@ export default function SaroRewardsPage() {
                         height={45}
                         className="mx-auto h-10 w-auto"
                       />
-                      <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-gray-700">
+                      <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-white">
                         {t.name}
                       </div>
                     </th>

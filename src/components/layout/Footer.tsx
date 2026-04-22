@@ -6,9 +6,9 @@ import TypewriterHeading from "@/components/home/TypewriterHeading";
 
 const FOOTER_TAGLINE_PREFIX = "Next-generation architectural finishes,";
 const FOOTER_TAGLINE_SUFFIXES = [
-  " at your fingertips.",
-  " ready to ship.",
-  " promised to deliver.",
+  "at your fingertips.",
+  "ready to ship.",
+  "promised to deliver.",
 ];
 
 const navLinks = [
@@ -60,23 +60,34 @@ export default function Footer() {
         {/* Section Top */}
         <div style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}>
           {/* Brand row */}
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+              flexWrap: "wrap",
+            }}
+          >
             <Image
               src="/images/SaroTech_Isotipo_01.png"
               alt="SARO TECH"
               width={50}
               height={50}
-              style={{ width: 50, height: "auto" }}
+              style={{ width: 50, height: "auto", flexShrink: 0 }}
             />
-            <TypewriterHeading
-              as="p"
-              prefix={FOOTER_TAGLINE_PREFIX}
-              messages={FOOTER_TAGLINE_SUFFIXES}
-              typeSpeed={45}
-              deleteSpeed={25}
-              holdMs={2600}
-              className="m-0 text-[1.2rem] leading-[1.4] text-white"
-            />
+            <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+              <p className="m-0 text-[1rem] leading-[1.4] text-white sm:text-[1.15rem] lg:text-[1.2rem]">
+                {FOOTER_TAGLINE_PREFIX}
+              </p>
+              <TypewriterHeading
+                as="p"
+                messages={FOOTER_TAGLINE_SUFFIXES}
+                typeSpeed={45}
+                deleteSpeed={25}
+                holdMs={2600}
+                className="m-0 text-[1rem] leading-[1.4] text-white sm:text-[1.15rem] lg:text-[1.2rem]"
+              />
+            </div>
           </div>
 
           {/* Content row — 3 columns */}
