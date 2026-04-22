@@ -17,9 +17,9 @@ export interface Inventory {
 }
 
 export interface ProductDimensions {
-  heightCm: number;
-  widthCm: number;
-  thicknessCm: number;
+  heightIn: number;
+  widthIn: number;
+  thicknessIn: number;
 }
 
 export interface ProductDetail {
@@ -27,8 +27,11 @@ export interface ProductDetail {
   swatchColor?: string;
   dimensions?: ProductDimensions;
   piecesPerBox?: number;
-  m2PerBox?: number;
+  sqftPerBox?: number;
   description?: string;
+  techSheetUrl?: string;
+  installGuideUrl?: string;
+  technicalDrawingUrl?: string;
 }
 
 export interface Product {
@@ -53,12 +56,15 @@ export interface Category {
   productCount: number;
 }
 
+export type ProjectCategoryTag = "fuel-station";
+
 export interface Project {
   id: string;
   name: string;
   image: string;
   description?: string;
   featured?: boolean;
+  category?: ProjectCategoryTag;
 }
 
 export interface Location {

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { productSlug, variantSlug } from "@/lib/slug";
+import { formatInches, formatSqft } from "@/lib/units";
 
 interface Props {
   variant: Product;
@@ -29,7 +30,7 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
 
   return (
     <section className="additional-info-section bg-white py-12">
-      <div className="additional-info-container container-lg grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="additional-info-container container-std grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* LEFT — accordions + support material + related */}
         <div className="info-column flex flex-col gap-6">
           <div className="toggle-sections flex flex-col gap-3">
@@ -53,11 +54,11 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
             >
               {dims ? (
                 <ul className="space-y-1 text-[14px] text-[#555]">
-                  <li>Height: {dims.heightCm} cm</li>
-                  <li>Width: {dims.widthCm} cm</li>
-                  <li>Thickness: {dims.thicknessCm} cm</li>
-                  {variant.detail?.m2PerBox && (
-                    <li>Coverage: {variant.detail.m2PerBox} m² per box</li>
+                  <li>Height: {formatInches(dims.heightIn)}</li>
+                  <li>Width: {formatInches(dims.widthIn)}</li>
+                  <li>Thickness: {formatInches(dims.thicknessIn)}</li>
+                  {variant.detail?.sqftPerBox && (
+                    <li>Coverage: {formatSqft(variant.detail.sqftPerBox)} per box</li>
                   )}
                   {variant.detail?.piecesPerBox && (
                     <li>Pieces per box: {variant.detail.piecesPerBox}</li>
@@ -124,22 +125,30 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
               }`}
             >
               <ul className="flex flex-col gap-2 pt-2 text-[14px]">
-                <li>
-                  <a
-                    href="#"
-                    className="text-saro-green underline underline-offset-4 transition-colors hover:text-saro-green-dark"
-                  >
-                    Technical Sheet
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-saro-green underline underline-offset-4 transition-colors hover:text-saro-green-dark"
-                  >
-                    Installation Guide
-                  </a>
-                </li>
+                {variant.detail?.techSheetUrl ? (
+                  <li>
+                    <a
+                      href={variant.detail.techSheetUrl}
+                      className="text-saro-green underline underline-offset-4 transition-colors hover:text-saro-green-dark"
+                    >
+                      Technical Sheet
+                    </a>
+                  </li>
+                ) : (
+                  <li className="text-gray-400">Technical Sheet — coming soon</li>
+                )}
+                {variant.detail?.installGuideUrl ? (
+                  <li>
+                    <a
+                      href={variant.detail.installGuideUrl}
+                      className="text-saro-green underline underline-offset-4 transition-colors hover:text-saro-green-dark"
+                    >
+                      Installation Guide
+                    </a>
+                  </li>
+                ) : (
+                  <li className="text-gray-400">Installation Guide — coming soon</li>
+                )}
               </ul>
             </div>
           </div>
@@ -179,10 +188,22 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
         {/* RIGHT — technical CAD drawing */}
         <div className="image-column flex flex-col items-center justify-start">
           <div className="technical-image flex w-full max-w-[480px] items-center justify-center">
-            <TechnicalDrawing dims={dims} />
+            {variant.detail?.technicalDrawingUrl ? (
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src={variant.detail.technicalDrawingUrl}
+                  alt={`${variant.name} technical drawing`}
+                  fill
+                  sizes="480px"
+                  className="object-contain"
+                />
+              </div>
+            ) : (
+              <TechnicalDrawing dims={dims} />
+            )}
           </div>
           <p className="mt-3 text-[12px] italic text-[#888]">
-            *Dimensions in centimeters*
+            *Dimensions in inches*
           </p>
         </div>
       </div>
@@ -235,10 +256,10 @@ function Accordion({
 function TechnicalDrawing({
   dims,
 }: {
-  dims?: { heightCm: number; widthCm: number; thicknessCm: number };
+  dims?: { heightIn: number; widthIn: number; thicknessIn: number };
 }) {
-  const w = dims?.widthCm ?? 15.5;
-  const t = dims?.thicknessCm ?? 1.8;
+  const w = dims?.widthIn ?? 6.1;
+  const t = dims?.thicknessIn ?? 0.71;
   return (
     <svg
       viewBox="0 0 400 300"
@@ -264,14 +285,14 @@ function TechnicalDrawing({
       <line x1="40" y1="215" x2="40" y2="225" stroke="#333" strokeWidth="1" />
       <line x1="360" y1="215" x2="360" y2="225" stroke="#333" strokeWidth="1" />
       <text x="200" y="240" textAnchor="middle" fontSize="12" fill="#333">
-        {w}
+        {formatInches(w)}
       </text>
       {/* Thickness annotation */}
       <line x1="380" y1="90" x2="380" y2="190" stroke="#333" strokeWidth="1" />
       <line x1="375" y1="90" x2="385" y2="90" stroke="#333" strokeWidth="1" />
       <line x1="375" y1="190" x2="385" y2="190" stroke="#333" strokeWidth="1" />
       <text x="395" y="144" fontSize="12" fill="#333">
-        {t}
+        {formatInches(t)}
       </text>
     </svg>
   );
