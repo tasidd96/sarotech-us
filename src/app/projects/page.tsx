@@ -4,6 +4,7 @@ import HorizontalCarousel from "@/components/ui/HorizontalCarousel";
 import { productSlug, variantSlug } from "@/lib/slug";
 import { projects } from "@/data/projects";
 import { products } from "@/data/products";
+import { asset } from "@/lib/asset";
 
 export const metadata = {
   title: "Projects | SARO TECH",
@@ -51,7 +52,7 @@ export default function ProjectsPage() {
               >
                 <div className="relative mb-3 h-[220px] w-[300px] overflow-hidden rounded-lg bg-gray-200">
                   <Image
-                    src={project.image}
+                    src={asset(project.image)}
                     alt={project.name}
                     fill
                     className="object-cover"
@@ -89,7 +90,7 @@ export default function ProjectsPage() {
                 >
                   <div className="relative mb-3 h-[220px] w-[300px] overflow-hidden rounded-lg bg-gray-200">
                     <Image
-                      src={station.image}
+                      src={asset(station.image)}
                       alt={station.name}
                       fill
                       className="object-cover"

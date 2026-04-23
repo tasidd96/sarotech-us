@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Product } from "@/lib/types";
 import { productSlug, variantSlug } from "@/lib/slug";
 import { formatInches, formatSqft } from "@/lib/units";
+import { asset } from "@/lib/asset";
 
 interface Props {
   variant: Product;
@@ -128,7 +129,7 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
                 {variant.detail?.techSheetUrl ? (
                   <li>
                     <a
-                      href={variant.detail.techSheetUrl}
+                      href={asset(variant.detail.techSheetUrl)}
                       className="text-saro-green underline underline-offset-4 transition-colors hover:text-saro-green-dark"
                     >
                       Technical Sheet
@@ -140,7 +141,7 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
                 {variant.detail?.installGuideUrl ? (
                   <li>
                     <a
-                      href={variant.detail.installGuideUrl}
+                      href={asset(variant.detail.installGuideUrl)}
                       className="text-saro-green underline underline-offset-4 transition-colors hover:text-saro-green-dark"
                     >
                       Installation Guide
@@ -191,7 +192,7 @@ export default function ProductInfoSection({ variant, relatedProducts }: Props) 
             {variant.detail?.technicalDrawingUrl ? (
               <div className="relative aspect-[4/3] w-full">
                 <Image
-                  src={variant.detail.technicalDrawingUrl}
+                  src={asset(variant.detail.technicalDrawingUrl)}
                   alt={`${variant.name} technical drawing`}
                   fill
                   sizes="480px"
