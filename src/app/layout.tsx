@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sarotech.us"),
@@ -26,6 +27,7 @@ export default function RootLayout({
         <main className="min-h-screen">{children}</main>
         <Footer />
         <GoogleAnalytics />
+        <Analytics />
       </body>
     </html>
   );
