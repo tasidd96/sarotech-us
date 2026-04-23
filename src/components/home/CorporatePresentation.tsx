@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 
-const PDF_HREF = "/SARO TECH - 2026 Corporate Presentation.pdf";
+const PDF_PATH = "/SARO TECH - 2026 Corporate Presentation.pdf";
 
 export default function CorporatePresentation() {
+  const PDF_HREF = asset(PDF_PATH);
   return (
     <section className="bg-saro-dark py-12 text-white lg:py-16">
       <div className="container-std">
