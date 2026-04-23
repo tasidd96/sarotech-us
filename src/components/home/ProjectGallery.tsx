@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { projects } from "@/data/projects";
+import { asset } from "@/lib/asset";
 
 export default function ProjectGallery() {
   const nonFeatured = projects.filter((p) => !p.featured);
@@ -14,7 +15,7 @@ export default function ProjectGallery() {
             <div key={project.id} className="group relative overflow-hidden rounded-lg">
               <div className="relative aspect-[4/3]">
                 <Image
-                  src={project.image}
+                  src={asset(project.image)}
                   alt={project.name}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
