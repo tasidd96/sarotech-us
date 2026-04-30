@@ -10,6 +10,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
       },
+      {
+        // HighLevel CDN — variant images set on inventory items.
+        protocol: "https",
+        hostname: "assets.cdn.filesafe.space",
+      },
     ],
   },
 };

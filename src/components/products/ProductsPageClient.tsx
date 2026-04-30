@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Product, ProductCategory, ProductType } from "@/lib/types";
+import { productMatchesCategory } from "@/lib/category";
 import SidebarFilters from "@/components/products/SidebarFilters";
 import CategoryTabs from "@/components/products/CategoryTabs";
 import MobileFiltersMenu from "@/components/products/MobileFiltersMenu";
@@ -56,7 +57,9 @@ export default function ProductsPageClient({
   // Product types available under the current category (or all when none selected).
   const availableTypes = useMemo<ProductType[]>(() => {
     const pool = activeCategory
-      ? products.filter((p) => p.category === activeCategory)
+      ? products.filter((p) =>
+          productMatchesCategory(p, activeCategory)
+        )
       : products;
     const set = new Set<ProductType>();
     for (const p of pool) set.add(p.productType);
@@ -65,7 +68,9 @@ export default function ProductsPageClient({
 
   const filtered = useMemo(() => {
     let result = activeCategory
-      ? products.filter((p) => p.category === activeCategory)
+      ? products.filter((p) =>
+          productMatchesCategory(p, activeCategory)
+        )
       : [...products];
     if (selectedTypes.length > 0) {
       result = result.filter((p) => selectedTypes.includes(p.productType));

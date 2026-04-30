@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/lib/types";
-import { variantSlug } from "@/lib/slug";
+import { variantSlug, variantLabel } from "@/lib/slug";
 
 type Props = {
   siblings: Product[];
@@ -139,7 +139,7 @@ export default function ToneSelector({
               <Link
                 key={s.sku}
                 href={`/products/${productSlug}/${sSlug}`}
-                aria-label={`${s.sku}-${s.variantName}`}
+                aria-label={variantLabel(s)}
                 aria-current={isActive ? "true" : undefined}
                 className={`group relative flex flex-col items-center gap-1.5 ${
                   isActive ? "" : "hover:scale-[1.02]"

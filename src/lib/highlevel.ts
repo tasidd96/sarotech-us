@@ -33,6 +33,27 @@ export function getHighLevelConfig(): HighLevelConfig | null {
   };
 }
 
+export interface GHLMedia {
+  id: string;
+  title?: string;
+  url: string;
+  type: string;
+  isFeatured?: boolean;
+  /** When set, this media is associated with these specific price (variant) IDs. */
+  priceIds?: string[];
+}
+
+export interface GHLVariantOption {
+  id: string;
+  name: string;
+}
+
+export interface GHLVariantAxis {
+  id: string;
+  name: string;
+  options: GHLVariantOption[];
+}
+
 export interface GHLProduct {
   _id: string;
   name: string;
@@ -46,6 +67,8 @@ export interface GHLProduct {
   slug?: string;
   createdAt: string;
   updatedAt: string;
+  medias?: GHLMedia[];
+  variants?: GHLVariantAxis[];
 }
 
 export interface GHLInventoryItem {
@@ -85,6 +108,18 @@ export interface ListInventoryResponse {
   total: { total: number };
 }
 
+export interface GHLShippingDimensions {
+  length?: number;
+  width?: number;
+  height?: number;
+  unit?: string; // typically "in"
+}
+
+export interface GHLShippingOptions {
+  weight?: { value?: number | null; unit?: string };
+  dimensions?: GHLShippingDimensions;
+}
+
 export interface GHLPrice {
   _id: string;
   name?: string;
@@ -93,6 +128,11 @@ export interface GHLPrice {
   amount: number;
   product: string;
   compareAtPrice?: number;
+  /** SKU as set in HL inventory (matches GHLInventoryItem.sku). */
+  sku?: string;
+  /** Option IDs referencing GHLVariantAxis.options[*].id on the parent product. */
+  variantOptionIds?: string[];
+  shippingOptions?: GHLShippingOptions;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCatalog } from "@/lib/catalog";
-import { findVariant, findProductVariants } from "@/lib/slug";
+import { findVariant, findProductVariants, variantLabel } from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
 import ProductFAQSection from "@/components/products/ProductFAQSection";
 import ToneSelector from "@/components/products/ToneSelector";
+import VariantSelector from "@/components/products/VariantSelector";
 import { formatInches } from "@/lib/units";
 
 type PageParams = { productSlug: string; variantSlug: string };
@@ -22,7 +23,7 @@ export async function generateMetadata({
   const variant = findVariant(productSlug, vSlug, catalog);
   if (!variant) return { title: "Product not found | SARO TECH USA" };
   return {
-    title: `${variant.name} — ${variant.sku}-${variant.variantName} | SARO TECH USA`,
+    title: `${variant.name} — ${variantLabel(variant)} | SARO TECH USA`,
     description:
       variant.detail?.description ??
       `${variant.name} in ${variant.variantName}. Premium WPC architectural finish from SARO TECH.`,
@@ -59,7 +60,7 @@ export default async function ProductVariantPage({
   const toneFamily = variant.detail?.toneFamily ?? "Natural Tones";
   const dims = variant.detail?.dimensions;
   const piecesPerBox = variant.detail?.piecesPerBox;
-  const variantCode = `${variant.sku}-${variant.variantName}`;
+  const variantCode = variantLabel(variant);
 
   return (
     <>
@@ -126,34 +127,40 @@ export default async function ProductVariantPage({
                 </span>
               </div>
 
-              <div className="product-image-section relative mx-auto h-[340px] w-full max-w-[420px] sm:h-[420px] lg:h-[500px]">
+              <div className="product-image-section relative mx-auto h-[340px] w-full max-w-[420px] overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto">
                 <Image
                   src={variant.image}
                   alt={`${variant.name} — ${variant.variantName}`}
                   fill
                   priority
                   sizes="(min-width: 1024px) 420px, 90vw"
-                  className="object-contain"
+                  className="object-contain p-2"
                 />
               </div>
             </div>
 
             {/* RIGHT COLUMN — variant selector + specs */}
             <div className="product-right-column flex flex-col gap-[25px] pt-5">
-              <ToneSelector
-                siblings={siblings}
-                currentSku={variant.sku}
-                productSlug={productSlug}
-                activeToneFamily={toneFamily}
-                variantCode={variantCode}
-              />
+              {variant.variantAxes && variant.variantAxes.length > 0 ? (
+                <VariantSelector
+                  product={variant}
+                  siblings={siblings}
+                  productSlug={productSlug}
+                />
+              ) : (
+                <ToneSelector
+                  siblings={siblings}
+                  currentSku={variant.sku}
+                  productSlug={productSlug}
+                  activeToneFamily={toneFamily}
+                  variantCode={variantCode}
+                />
+              )}
 
-
-
-              {/* Size */}
+              {/* Dimensions */}
               <div className="product-size-section flex items-start justify-between border-t-2 border-black p-[10px]">
                 <span className="size-label text-[16px] font-medium text-saro-dark">
-                  Size
+                  Dimensions
                 </span>
                 {dims ? (
                   <div className="size-details text-right text-[14.4px] text-saro-dark">

@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
-import { productSlug, variantSlug } from "@/lib/slug";
+import { productSlug, variantSlug, variantLabel } from "@/lib/slug";
 
 export default function ProductCard({ product }: { product: Product }) {
   const toneSuffix = product.detail?.toneFamily
     ? ` - ${product.detail.toneFamily}`
     : "";
   const href = `/products/${productSlug(product)}/${variantSlug(product)}`;
+  const label = variantLabel(product);
 
   return (
     <Link
@@ -17,7 +18,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="products-page-image relative flex aspect-square w-full items-center justify-center overflow-hidden bg-gray-100 sm:h-[270px] sm:aspect-auto">
         <Image
           src={product.image}
-          alt={`${product.sku}-${product.variantName}`}
+          alt={label}
           fill
           className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03] sm:p-0 sm:object-cover"
           sizes="(min-width: 1024px) 252px, (min-width: 640px) 50vw, 100vw"
@@ -32,7 +33,7 @@ export default function ProductCard({ product }: { product: Product }) {
           SKU: {product.skuNumber}
         </p>
         <p className="products-page-variant text-[12px] text-[#888]">
-          {product.sku}-{product.variantName}
+          {label}
         </p>
       </div>
     </Link>
