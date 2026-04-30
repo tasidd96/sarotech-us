@@ -4,22 +4,25 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { ProductCategory, ProductType } from "@/lib/types";
 import { productTypeLabels } from "@/data/products";
-import { products } from "@/data/products";
 
 type MenuKey = ProductCategory;
 
-const MENU_ITEMS: { key: MenuKey; desktop: string; mobile: string }[] = [
+type Props = {
+  /**
+   * Map of category → product types that have at least one visible product.
+   * Categories absent from the map are hidden entirely. Types are filtered
+   * to only those actually represented in the live catalog.
+   */
+  typesByCategory: Partial<Record<ProductCategory, ProductType[]>>;
+};
+
+const ALL_MENU_ITEMS: { key: MenuKey; desktop: string; mobile: string }[] = [
   { key: "interior", desktop: "INTERIOR PRODUCTS", mobile: "INTERIOR" },
   { key: "exterior", desktop: "EXTERIOR PRODUCTS", mobile: "EXTERIOR" },
+  { key: "accessories", desktop: "ACCESSORIES", mobile: "ACCESSORIES" },
 ];
 
-function typesForCategory(cat: MenuKey): ProductType[] {
-  const set = new Set<ProductType>();
-  for (const p of products) if (p.category === cat) set.add(p.productType);
-  return Array.from(set);
-}
-
-export default function ProductsSubNav() {
+export default function ProductsSubNav({ typesByCategory }: Props) {
   const [openKey, setOpenKey] = useState<MenuKey | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -35,6 +38,13 @@ export default function ProductsSubNav() {
     closeTimer.current = setTimeout(() => setOpenKey(null), 120);
   };
 
+  const visibleMenuItems = ALL_MENU_ITEMS.filter(
+    (item) => (typesByCategory[item.key]?.length ?? 0) > 0
+  );
+
+  // No populated categories at all — hide the entire sub-nav.
+  if (visibleMenuItems.length === 0) return null;
+
   return (
     <div
       className="products-menu-container white-menu relative"
@@ -42,7 +52,7 @@ export default function ProductsSubNav() {
       onMouseLeave={scheduleClose}
     >
       <nav className="products-main-menu container-lg flex h-[64px] items-center justify-center">
-        {MENU_ITEMS.map((item) => {
+        {visibleMenuItems.map((item) => {
           const isOpen = openKey === item.key;
           return (
             <Link
@@ -82,7 +92,7 @@ export default function ProductsSubNav() {
       </nav>
 
       {/* Hover dropdown — animation: fadeInDown 0.3s ease */}
-      {openKey && (
+      {openKey && (typesByCategory[openKey]?.length ?? 0) > 0 && (
         <div
           className="dropdown-menu sub-nav-dropdown absolute left-0 right-0 top-[64px] z-[2001]"
           style={{ backgroundColor: "rgb(26,26,26)", padding: "20px" }}
@@ -91,7 +101,7 @@ export default function ProductsSubNav() {
         >
           <div className="dropdown-content">
             <div className="products-grid container-lg flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-              {typesForCategory(openKey).map((t) => (
+              {(typesByCategory[openKey] ?? []).map((t) => (
                 <Link
                   key={t}
                   href={`/products?tab=${openKey}&type=${t}`}

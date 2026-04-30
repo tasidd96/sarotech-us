@@ -34,6 +34,27 @@ export interface ProductDetail {
   technicalDrawingUrl?: string;
 }
 
+/**
+ * A single option within a variant axis (e.g. "A41-Teak Dual" within
+ * the "Color" axis, or "Regular" within the "Size" axis). The id is
+ * HighLevel's stable option ID; name is the human label.
+ */
+export interface VariantOption {
+  id: string;
+  name: string;
+}
+
+/**
+ * A variant axis on a product (e.g. "Color", "Size", "Style"). Defined
+ * in HighLevel on the parent Product. Each inventory variant carries a
+ * combination of one option per axis.
+ */
+export interface VariantAxis {
+  id: string;
+  name: string;
+  options: VariantOption[];
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -47,6 +68,17 @@ export interface Product {
   featured?: boolean;
   inventory?: Inventory;
   detail?: ProductDetail;
+  /**
+   * The variant axes defined on the parent product (HL-driven).
+   * Same array shared across all variants of a product so the selector
+   * UI knows the full option set per axis.
+   */
+  variantAxes?: VariantAxis[];
+  /**
+   * This variant's selected option per axis, keyed by axis name.
+   * e.g. { Color: "A41-Teak Dual", Size: "Regular" }
+   */
+  selectedOptions?: Record<string, string>;
 }
 
 export interface Category {

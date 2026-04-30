@@ -15,16 +15,23 @@
  */
 
 import { products as localProducts } from "@/data/products";
-import { Product, ProductCategory, ProductType } from "./types";
+import {
+  Product,
+  ProductCategory,
+  ProductDimensions,
+  ProductType,
+  VariantAxis,
+} from "./types";
 import {
   getHighLevelConfig,
+  getProduct,
   HighLevelConfig,
-  listProducts,
   listInventory,
   listPricesForProduct,
   GHLProduct,
   GHLInventoryItem,
   GHLPrice,
+  GHLShippingDimensions,
 } from "./highlevel";
 
 export async function getCatalog(): Promise<Product[]> {
@@ -32,19 +39,19 @@ export async function getCatalog(): Promise<Product[]> {
   if (!config) return localProducts;
 
   try {
-    const [hlProducts, inventory] = await Promise.all([
-      fetchAllProducts(config),
-      fetchAllInventory(config),
-    ]);
-    const priceBySku = await fetchPriceBySku(config, inventory);
+    const inventory = await fetchAllInventory(config);
+    const { productById, priceBySku } = await fetchProductsAndPrices(
+      config,
+      inventory
+    );
     const result = buildCatalogFromHL(
-      hlProducts,
+      productById,
       inventory,
       priceBySku,
       localProducts
     );
     console.log(
-      `[catalog] HL source of truth: ${hlProducts.length} products, ${inventory.length} variants, ${result.length} sellable on site.`
+      `[catalog] HL source of truth: ${productById.size} products, ${inventory.length} variants, ${result.length} sellable on site.`
     );
     return result;
   } catch (err) {
@@ -140,14 +147,12 @@ const FALLBACK_MAPPING: HLProductMapping = {
 // ─────────────────────────────────────────────────────────────────────────
 
 function buildCatalogFromHL(
-  hlProducts: GHLProduct[],
+  productById: Map<string, GHLProduct>,
   inventory: GHLInventoryItem[],
-  priceBySku: Map<string, number>,
+  priceBySku: Map<string, GHLPrice>,
   seed: Product[]
 ): Product[] {
-  const productById = new Map(hlProducts.map((p) => [p._id, p]));
   const seedBySkuNumber = new Map(seed.map((p) => [p.skuNumber, p]));
-
   const sellable = inventory.filter(isSellable);
 
   return sellable.map((item) => {
@@ -155,8 +160,23 @@ function buildCatalogFromHL(
     const productName = hlProduct?.name ?? "Product";
     const mapping = HL_PRODUCT_MAP[productName] ?? FALLBACK_MAPPING;
     const { sku, variantName } = parseVariantName(item.name);
-    const price = item.sku ? priceBySku.get(item.sku) : undefined;
+    const priceRecord = item.sku ? priceBySku.get(item.sku) : undefined;
+    const price = priceRecord?.amount;
     const seedMatch = item.sku ? seedBySkuNumber.get(item.sku) : undefined;
+
+    const variantAxes: VariantAxis[] | undefined = hlProduct?.variants?.length
+      ? hlProduct.variants
+      : undefined;
+    const selectedOptions = variantAxes
+      ? deriveSelectedOptions(variantAxes, priceRecord?.variantOptionIds ?? [])
+      : undefined;
+
+    const hlDimensions = mapShippingDimensions(
+      priceRecord?.shippingOptions?.dimensions
+    );
+    // Seed dimensions win when present (the marketing-blessed numbers); HL's
+    // shipping dims are a reasonable fallback when no seed match exists.
+    const detail = mergeDetail(seedMatch?.detail, hlDimensions);
 
     const built: Product = {
       id: item._id,
@@ -171,7 +191,7 @@ function buildCatalogFromHL(
       // have one set, so this is the primary image source in practice.
       image: item.image ?? seedMatch?.image ?? mapping.defaultImage,
       featured: seedMatch?.featured,
-      detail: seedMatch?.detail,
+      detail,
       ...(typeof price === "number" ? { price } : {}),
       inventory: {
         available: item.availableQuantity ?? 0,
@@ -179,6 +199,8 @@ function buildCatalogFromHL(
           (item.availableQuantity ?? 0) > 0 || item.allowOutOfStockPurchases,
         allowOutOfStock: item.allowOutOfStockPurchases,
       },
+      ...(variantAxes ? { variantAxes } : {}),
+      ...(selectedOptions ? { selectedOptions } : {}),
     };
     return built;
   });
@@ -211,24 +233,58 @@ function parseVariantName(name: string): {
   return { sku, variantName };
 }
 
+// Map HL price.variantOptionIds[] back to { axisName: optionName } using the
+// parent product's variants[] structure. Each axis has a list of options
+// with stable IDs; the price references option IDs, one per axis.
+function deriveSelectedOptions(
+  axes: VariantAxis[],
+  optionIds: string[]
+): Record<string, string> {
+  const idSet = new Set(optionIds);
+  const out: Record<string, string> = {};
+  for (const axis of axes) {
+    const hit = axis.options.find((o) => idSet.has(o.id));
+    if (hit) out[axis.name] = hit.name;
+  }
+  return out;
+}
+
+// HL ships dimensions on the price record under shippingOptions.dimensions.
+// Map (length, width, height) → (heightIn, widthIn, thicknessIn) which is
+// how the site's calculator + size display expect them. For a wall panel
+// this is "long-side, narrow-side, depth" which matches the convention.
+function mapShippingDimensions(
+  d: GHLShippingDimensions | undefined
+): ProductDimensions | undefined {
+  if (!d) return undefined;
+  const heightIn = d.length;
+  const widthIn = d.width;
+  const thicknessIn = d.height;
+  if (
+    typeof heightIn !== "number" ||
+    typeof widthIn !== "number" ||
+    typeof thicknessIn !== "number"
+  ) {
+    return undefined;
+  }
+  return { heightIn, widthIn, thicknessIn };
+}
+
+// Merge: keep all of seedDetail, but if it doesn't have dimensions and HL
+// provided some, fall back to HL. Returns undefined when both are empty.
+function mergeDetail(
+  seedDetail: Product["detail"],
+  hlDimensions: ProductDimensions | undefined
+): Product["detail"] {
+  if (!seedDetail && !hlDimensions) return undefined;
+  if (!seedDetail) return { dimensions: hlDimensions };
+  if (seedDetail.dimensions || !hlDimensions) return seedDetail;
+  return { ...seedDetail, dimensions: hlDimensions };
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // HL fetchers
 // ─────────────────────────────────────────────────────────────────────────
-
-async function fetchAllProducts(
-  config: HighLevelConfig
-): Promise<GHLProduct[]> {
-  const all: GHLProduct[] = [];
-  const pageSize = 100;
-  let offset = 0;
-  for (let i = 0; i < 50; i++) {
-    const page = await listProducts(config, { limit: pageSize, offset });
-    all.push(...page.products);
-    if (page.products.length < pageSize) break;
-    offset += pageSize;
-  }
-  return all;
-}
 
 async function fetchAllInventory(
   config: HighLevelConfig
@@ -245,42 +301,61 @@ async function fetchAllInventory(
   return all;
 }
 
-// HL stores one Product with many variants; each variant has its own SKU
-// (in inventory) and its own price (in prices). Variants are linked by
-// matching `inventory.name` to `price.name`. We resolve prices to SKUs
-// here so the build step is a flat lookup.
-async function fetchPriceBySku(
+// For each unique product id referenced by inventory, fetch the full HL
+// product (with `variants` and `medias`) AND its prices in parallel. The
+// full product is required to know the variant axes (Color, Size, etc.)
+// and option lookup tables; the list endpoint does not return variants.
+//
+// Variants are linked from inventory → prices by matching `inventory.name`
+// to `price.name` within the same product. We surface the full GHLPrice
+// (not just amount) so callers can read shippingOptions.dimensions and
+// variantOptionIds.
+async function fetchProductsAndPrices(
   config: HighLevelConfig,
   inventory: GHLInventoryItem[]
-): Promise<Map<string, number>> {
+): Promise<{
+  productById: Map<string, GHLProduct>;
+  priceBySku: Map<string, GHLPrice>;
+}> {
   const productIds = Array.from(
     new Set(inventory.map((i) => i.product).filter(Boolean))
   );
 
-  const productPrices = await Promise.all(
+  const data = await Promise.all(
     productIds.map(async (productId) => {
       try {
-        const { prices } = await listPricesForProduct(config, productId);
-        return [productId, prices] as const;
+        const [pricesRes, fullProduct] = await Promise.all([
+          listPricesForProduct(config, productId),
+          getProduct(config, productId),
+        ]);
+        return { productId, prices: pricesRes.prices, product: fullProduct };
       } catch (err) {
         console.error(
-          `[catalog] price fetch failed for product ${productId}:`,
+          `[catalog] product/price fetch failed for ${productId}:`,
           err
         );
-        return [productId, [] as GHLPrice[]] as const;
+        return { productId, prices: [] as GHLPrice[], product: null };
       }
     })
   );
-  const pricesByProductId = new Map(productPrices);
 
-  const priceBySku = new Map<string, number>();
+  const productById = new Map<string, GHLProduct>();
+  const pricesByProductId = new Map<string, GHLPrice[]>();
+  for (const d of data) {
+    if (d.product) productById.set(d.productId, d.product);
+    pricesByProductId.set(d.productId, d.prices);
+  }
+
+  const priceBySku = new Map<string, GHLPrice>();
   for (const item of inventory) {
     if (!item.sku) continue;
     const list = pricesByProductId.get(item.product) ?? [];
-    const match = list.find((p) => p.name === item.name);
-    if (match && typeof match.amount === "number") {
-      priceBySku.set(item.sku, match.amount);
-    }
+    // Primary match: same name (e.g. price.name === inventory.name).
+    // Fallback: HL also stores `sku` directly on price records.
+    const match =
+      list.find((p) => p.name === item.name) ??
+      list.find((p) => p.sku === item.sku);
+    if (match) priceBySku.set(item.sku, match);
   }
-  return priceBySku;
+  return { productById, priceBySku };
 }
