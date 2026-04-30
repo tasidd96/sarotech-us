@@ -112,7 +112,14 @@ const HL_PRODUCT_MAP: Record<string, HLProductMapping> = {
     productType: "corner-pieces",
     defaultImage: "/images/categories/exterior-corner.png",
   },
+  // Both names mapped here so the renaming in HL (admin → Products → rename)
+  // can land without an accompanying code change.
   "Clips & Hardware": {
+    category: "accessories",
+    productType: "clips",
+    defaultImage: "/images/categories/accessories.jpg",
+  },
+  "Clips & Fasteners": {
     category: "accessories",
     productType: "clips",
     defaultImage: "/images/categories/accessories.jpg",
