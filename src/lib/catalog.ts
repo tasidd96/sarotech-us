@@ -1,22 +1,28 @@
 /**
  * Catalog data layer.
  *
- * Returns Product[] for UI. When HighLevel is configured (env vars present),
- * overlays live inventory and price onto the local product list — keyed by
- * `skuNumber` against HighLevel inventory `sku`. When HL is not configured
- * or the call fails, falls back to local seed data so the site keeps
- * rendering during development and before credentials are dropped in.
+ * When HighLevel is configured, HL is the **source of truth** for the
+ * catalog: the product list is built from HL inventory variants, prices
+ * come from HL price-lists, and we overlay seed metadata (image, copy,
+ * drawings, FAQs) onto any HL variant whose `sku` matches a seed
+ * `skuNumber`. Variants without a seed match still render with HL data
+ * and a category-default image.
+ *
+ * When HL is not configured (no env vars) or the call fails, we fall
+ * back to the local seed so the site keeps rendering during development.
  *
  * Server-only. Use from server components, route handlers, or server actions.
  */
 
 import { products as localProducts } from "@/data/products";
-import { Product } from "./types";
+import { Product, ProductCategory, ProductType } from "./types";
 import {
   getHighLevelConfig,
   HighLevelConfig,
+  listProducts,
   listInventory,
   listPricesForProduct,
+  GHLProduct,
   GHLInventoryItem,
   GHLPrice,
 } from "./highlevel";
@@ -26,16 +32,23 @@ export async function getCatalog(): Promise<Product[]> {
   if (!config) return localProducts;
 
   try {
-    const inventory = await fetchAllInventory(config);
+    const [hlProducts, inventory] = await Promise.all([
+      fetchAllProducts(config),
+      fetchAllInventory(config),
+    ]);
     const priceBySku = await fetchPriceBySku(config, inventory);
-    const result = overlayHighLevel(localProducts, inventory, priceBySku);
-    const matched = result.filter((p) => p.inventory).length;
+    const result = buildCatalogFromHL(
+      hlProducts,
+      inventory,
+      priceBySku,
+      localProducts
+    );
     console.log(
-      `[catalog] HL: ${inventory.length} inventory items, ${priceBySku.size} priced, ${matched}/${result.length} seed products matched.`
+      `[catalog] HL source of truth: ${hlProducts.length} products, ${inventory.length} variants, ${result.length} sellable on site.`
     );
     return result;
   } catch (err) {
-    console.error("[catalog] HighLevel fetch failed:", err);
+    console.error("[catalog] HighLevel fetch failed; using seed:", err);
     return localProducts;
   }
 }
@@ -49,13 +62,170 @@ export function isHighLevelConfigured(): boolean {
   return getHighLevelConfig() !== null;
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// HL Product → site category/productType mapping.
+//
+// The site's category and productType unions are fixed (see types.ts).
+// HL Product names map to those unions here. Edit this table when new HL
+// Products are added or you want to recategorize existing ones.
+// ─────────────────────────────────────────────────────────────────────────
+
+interface HLProductMapping {
+  category: ProductCategory;
+  productType: ProductType;
+  defaultImage: string;
+}
+
+const HL_PRODUCT_MAP: Record<string, HLProductMapping> = {
+  "Decking/Flooring": {
+    category: "exterior",
+    productType: "floor-decking",
+    defaultImage: "/images/categories/exterior.jpg",
+  },
+  "Wall Cladding": {
+    category: "exterior",
+    productType: "wall-panels",
+    defaultImage: "/images/categories/coextruded-cladding.png",
+  },
+  "Coextruded Wall Panel": {
+    category: "interior",
+    productType: "coextruded-panels",
+    defaultImage: "/images/categories/coextruded-cladding.png",
+  },
+  "Synthetic Marble": {
+    category: "interior",
+    productType: "synthetic-marble",
+    defaultImage: "/images/categories/continuous-synthetic-marble.png",
+  },
+  "WPC Corner": {
+    category: "accessories",
+    productType: "corner-pieces",
+    defaultImage: "/images/categories/exterior-corner.png",
+  },
+  "Clips & Hardware": {
+    category: "accessories",
+    productType: "clips",
+    defaultImage: "/images/categories/accessories.jpg",
+  },
+  "PU Stone": {
+    category: "exterior",
+    productType: "wall-panels",
+    defaultImage: "/images/categories/exterior.jpg",
+  },
+  "Synthetic Travertine Stone": {
+    category: "exterior",
+    productType: "wall-panels",
+    defaultImage: "/images/categories/exterior.jpg",
+  },
+  "Coextruded Beam": {
+    category: "exterior",
+    productType: "deck-accessories",
+    defaultImage: "/images/categories/coextruded-beam.png",
+  },
+  "Architectural Model Render (3D)": {
+    category: "accessories",
+    productType: "deck-accessories",
+    defaultImage: "/images/categories/accessories.jpg",
+  },
+};
+
+const FALLBACK_MAPPING: HLProductMapping = {
+  category: "accessories",
+  productType: "deck-accessories",
+  defaultImage: "/images/categories/accessories.jpg",
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// Builders
+// ─────────────────────────────────────────────────────────────────────────
+
+function buildCatalogFromHL(
+  hlProducts: GHLProduct[],
+  inventory: GHLInventoryItem[],
+  priceBySku: Map<string, number>,
+  seed: Product[]
+): Product[] {
+  const productById = new Map(hlProducts.map((p) => [p._id, p]));
+  const seedBySkuNumber = new Map(seed.map((p) => [p.skuNumber, p]));
+
+  const sellable = inventory.filter(isSellable);
+
+  return sellable.map((item) => {
+    const hlProduct = productById.get(item.product);
+    const productName = hlProduct?.name ?? "Product";
+    const mapping = HL_PRODUCT_MAP[productName] ?? FALLBACK_MAPPING;
+    const { sku, variantName } = parseVariantName(item.name);
+    const price = item.sku ? priceBySku.get(item.sku) : undefined;
+    const seedMatch = item.sku ? seedBySkuNumber.get(item.sku) : undefined;
+
+    const built: Product = {
+      id: item._id,
+      name: productName,
+      sku: sku || item.sku || item._id,
+      skuNumber: item.sku ?? "",
+      variantName: variantName || item.name,
+      category: seedMatch?.category ?? mapping.category,
+      productType: seedMatch?.productType ?? mapping.productType,
+      image: seedMatch?.image ?? mapping.defaultImage,
+      featured: seedMatch?.featured,
+      detail: seedMatch?.detail,
+      ...(typeof price === "number" ? { price } : {}),
+      inventory: {
+        available: item.availableQuantity ?? 0,
+        inStock:
+          (item.availableQuantity ?? 0) > 0 || item.allowOutOfStockPurchases,
+        allowOutOfStock: item.allowOutOfStockPurchases,
+      },
+    };
+    return built;
+  });
+}
+
+// Sellable = stocked OR explicitly opted-in to out-of-stock purchases.
+function isSellable(item: GHLInventoryItem): boolean {
+  const qty = item.availableQuantity;
+  return (typeof qty === "number" && qty > 0) || item.allowOutOfStockPurchases;
+}
+
+// HL variant names commonly embed an alphanumeric prefix like "A41-Teak Dual"
+// (where A41 is the seed-style sku). Extract it when present so the site's
+// existing slug helpers (which use sku + variantName) produce stable URLs.
+function parseVariantName(name: string): {
+  sku: string;
+  variantName: string;
+} {
+  const m = name.match(/([A-Z]+\d+)/);
+  return {
+    sku: m ? m[1] : "",
+    variantName: name,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// HL fetchers
+// ─────────────────────────────────────────────────────────────────────────
+
+async function fetchAllProducts(
+  config: HighLevelConfig
+): Promise<GHLProduct[]> {
+  const all: GHLProduct[] = [];
+  const pageSize = 100;
+  let offset = 0;
+  for (let i = 0; i < 50; i++) {
+    const page = await listProducts(config, { limit: pageSize, offset });
+    all.push(...page.products);
+    if (page.products.length < pageSize) break;
+    offset += pageSize;
+  }
+  return all;
+}
+
 async function fetchAllInventory(
   config: HighLevelConfig
 ): Promise<GHLInventoryItem[]> {
   const all: GHLInventoryItem[] = [];
   const pageSize = 100;
   let offset = 0;
-  // Safety cap — stops runaway loops if the API misreports totals.
   for (let i = 0; i < 50; i++) {
     const page = await listInventory(config, { limit: pageSize, offset });
     all.push(...page.inventory);
@@ -67,8 +237,8 @@ async function fetchAllInventory(
 
 // HL stores one Product with many variants; each variant has its own SKU
 // (in inventory) and its own price (in prices). Variants are linked by
-// matching `inventory.name` to `price.name`. We resolve prices to SKUs here
-// so the overlay step is a flat lookup.
+// matching `inventory.name` to `price.name`. We resolve prices to SKUs
+// here so the build step is a flat lookup.
 async function fetchPriceBySku(
   config: HighLevelConfig,
   inventory: GHLInventoryItem[]
@@ -103,29 +273,4 @@ async function fetchPriceBySku(
     }
   }
   return priceBySku;
-}
-
-function overlayHighLevel(
-  products: Product[],
-  inventory: GHLInventoryItem[],
-  priceBySku: Map<string, number>
-): Product[] {
-  const bySkuNumber = new Map<string, GHLInventoryItem>();
-  for (const item of inventory) {
-    if (item.sku) bySkuNumber.set(item.sku, item);
-  }
-  return products.map((p) => {
-    const hit = bySkuNumber.get(p.skuNumber);
-    if (!hit) return p;
-    const price = priceBySku.get(hit.sku);
-    return {
-      ...p,
-      ...(typeof price === "number" ? { price } : {}),
-      inventory: {
-        available: hit.availableQuantity,
-        inStock: hit.availableQuantity > 0 || hit.allowOutOfStockPurchases,
-        allowOutOfStock: hit.allowOutOfStockPurchases,
-      },
-    };
-  });
 }
