@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import ProductsSubNav from "@/components/layout/ProductsSubNav";
 import { getCatalog } from "@/lib/catalog";
 import { categoriesForProduct } from "@/lib/category";
@@ -34,7 +35,12 @@ export default async function ProductsLayout({
 
   return (
     <>
-      <ProductsSubNav typesByCategory={typesByCategory} />
+      {/* ProductsSubNav reads URL searchParams to highlight the active
+          category/type. useSearchParams() needs a Suspense boundary at the
+          page boundary in Next 14, otherwise the static prerender bails. */}
+      <Suspense fallback={null}>
+        <ProductsSubNav typesByCategory={typesByCategory} />
+      </Suspense>
       {children}
     </>
   );

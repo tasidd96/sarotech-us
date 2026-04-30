@@ -84,7 +84,14 @@ interface HLProductMapping {
 }
 
 const HL_PRODUCT_MAP: Record<string, HLProductMapping> = {
+  // Both names mapped — Talha renamed in HL admin from "Decking/Flooring"
+  // to "Floor Decking". Keeping the old name as a safety alias.
   "Decking/Flooring": {
+    category: "exterior",
+    productType: "floor-decking",
+    defaultImage: "/images/categories/exterior.jpg",
+  },
+  "Floor Decking": {
     category: "exterior",
     productType: "floor-decking",
     defaultImage: "/images/categories/exterior.jpg",
