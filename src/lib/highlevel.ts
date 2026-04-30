@@ -85,6 +85,23 @@ export interface ListInventoryResponse {
   total: { total: number };
 }
 
+export interface GHLPrice {
+  _id: string;
+  name?: string;
+  type?: string;
+  currency?: string;
+  amount: number;
+  product: string;
+  compareAtPrice?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ListPricesResponse {
+  prices: GHLPrice[];
+  total: number;
+}
+
 // Page cache TTL. 60s is a reasonable floor for "near-realtime" inventory
 // without hammering the GHL API on every request.
 const REVALIDATE_SECONDS = 60;
@@ -157,4 +174,20 @@ export async function listInventory(
     offset: params.offset ?? 0,
     search: params.search,
   });
+}
+
+export async function listPricesForProduct(
+  config: HighLevelConfig,
+  productId: string,
+  params: { limit?: number; offset?: number } = {}
+): Promise<ListPricesResponse> {
+  return ghlFetch<ListPricesResponse>(
+    config,
+    `/products/${productId}/price`,
+    {
+      locationId: config.locationId,
+      limit: params.limit ?? 100,
+      offset: params.offset ?? 0,
+    }
+  );
 }
