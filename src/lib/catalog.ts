@@ -95,12 +95,15 @@ const HL_PRODUCT_MAP: Record<string, HLProductMapping> = {
     defaultImage: "/images/categories/coextruded-cladding.png",
   },
   "Coextruded Wall Panel": {
-    category: "interior",
+    // Coextruded WPC panels are weather-rated for outdoor cladding —
+    // exterior is the canonical category. Talha confirmed no interior-only
+    // material is on hand today.
+    category: "exterior",
     productType: "coextruded-panels",
     defaultImage: "/images/categories/coextruded-cladding.png",
   },
   "Synthetic Marble": {
-    category: "interior",
+    category: "exterior",
     productType: "synthetic-marble",
     defaultImage: "/images/categories/continuous-synthetic-marble.png",
   },

@@ -1,18 +1,19 @@
 import { Product, ProductCategory } from "./types";
 
 /**
- * Cross-category rule: exterior-rated products can also be used indoors,
- * so they appear under the "interior" tab in addition to "exterior". The
- * inverse is NOT true — interior-only products are not weatherproof and
- * stay in the interior tab only.
+ * Returns the categories a product should appear under. Currently strict:
+ * each product only surfaces under its declared category. (We previously
+ * cross-listed exterior under interior, but Talha clarified that's not
+ * desired — if no interior-only product exists in HL, the Interior tab
+ * should be empty / hidden, not full of cross-listed exterior items.)
  *
- * Update this function if more cross-listing rules are added (e.g. an
- * accessory that also belongs in interior).
+ * If we later want to support multi-category products (e.g. read from HL
+ * collectionIds, or add an explicit `additionalCategories` field), this
+ * is the single point to extend.
  */
 export function categoriesForProduct(
   p: Pick<Product, "category">
 ): ProductCategory[] {
-  if (p.category === "exterior") return ["exterior", "interior"];
   return [p.category];
 }
 

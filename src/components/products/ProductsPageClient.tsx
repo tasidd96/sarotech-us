@@ -14,17 +14,21 @@ interface Props {
   products: Product[];
   initialTab: ProductCategory | null;
   initialQ: string;
+  initialTypes?: ProductType[];
 }
 
 export default function ProductsPageClient({
   products,
   initialTab,
   initialQ,
+  initialTypes,
 }: Props) {
   const [activeCategory, setActiveCategory] = useState<ProductCategory | null>(
     initialTab
   );
-  const [selectedTypes, setSelectedTypes] = useState<ProductType[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<ProductType[]>(
+    initialTypes ?? []
+  );
   const [searchQuery, setSearchQuery] = useState(initialQ);
   const [sortBy, setSortBy] = useState("name-asc");
   const [perPage, setPerPage] = useState(12);
