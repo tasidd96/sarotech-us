@@ -166,7 +166,10 @@ function buildCatalogFromHL(
       variantName: variantName || item.name,
       category: seedMatch?.category ?? mapping.category,
       productType: seedMatch?.productType ?? mapping.productType,
-      image: seedMatch?.image ?? mapping.defaultImage,
+      // HL variant image (CDN-hosted, set per inventory item) takes priority
+      // over seed image and the category fallback. ~all variants in HL today
+      // have one set, so this is the primary image source in practice.
+      image: item.image ?? seedMatch?.image ?? mapping.defaultImage,
       featured: seedMatch?.featured,
       detail: seedMatch?.detail,
       ...(typeof price === "number" ? { price } : {}),
@@ -187,18 +190,25 @@ function isSellable(item: GHLInventoryItem): boolean {
   return (typeof qty === "number" && qty > 0) || item.allowOutOfStockPurchases;
 }
 
-// HL variant names commonly embed an alphanumeric prefix like "A41-Teak Dual"
-// (where A41 is the seed-style sku). Extract it when present so the site's
-// existing slug helpers (which use sku + variantName) produce stable URLs.
+// HL variant names commonly embed an alphanumeric SKU prefix like "A41-Teak
+// Dual / Regular". Sometimes that prefix is preceded by structural metadata
+// like "4-Ribs / " or "4x8 / " (e.g. "5-Ribs / A13-Teak Brushed"). For card
+// display we want the variant name to start at the A##- token and run to
+// the end — so "5-Ribs / A13-Teak Brushed" becomes "A13-Teak Brushed", but
+// "A41-Teak Dual / Regular" stays as "A41-Teak Dual / Regular".
+//
+// The matched SKU prefix is also returned for slug generation and seed
+// metadata matching.
 function parseVariantName(name: string): {
   sku: string;
   variantName: string;
 } {
-  const m = name.match(/([A-Z]+\d+)/);
-  return {
-    sku: m ? m[1] : "",
-    variantName: name,
-  };
+  const m = name.match(/([A-Z]+\d+)-/);
+  if (!m) return { sku: "", variantName: name };
+  const sku = m[1];
+  const idx = name.indexOf(m[0]);
+  const variantName = name.slice(idx).trim();
+  return { sku, variantName };
 }
 
 // ─────────────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCatalog } from "@/lib/catalog";
-import { findVariant, findProductVariants } from "@/lib/slug";
+import { findVariant, findProductVariants, variantLabel } from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
 import ProductFAQSection from "@/components/products/ProductFAQSection";
@@ -22,7 +22,7 @@ export async function generateMetadata({
   const variant = findVariant(productSlug, vSlug, catalog);
   if (!variant) return { title: "Product not found | SARO TECH USA" };
   return {
-    title: `${variant.name} — ${variant.sku}-${variant.variantName} | SARO TECH USA`,
+    title: `${variant.name} — ${variantLabel(variant)} | SARO TECH USA`,
     description:
       variant.detail?.description ??
       `${variant.name} in ${variant.variantName}. Premium WPC architectural finish from SARO TECH.`,
@@ -59,7 +59,7 @@ export default async function ProductVariantPage({
   const toneFamily = variant.detail?.toneFamily ?? "Natural Tones";
   const dims = variant.detail?.dimensions;
   const piecesPerBox = variant.detail?.piecesPerBox;
-  const variantCode = `${variant.sku}-${variant.variantName}`;
+  const variantCode = variantLabel(variant);
 
   return (
     <>
