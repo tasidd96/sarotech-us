@@ -7,6 +7,8 @@ import { findVariant, findProductVariants, variantLabel } from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
 import ProductFAQSection from "@/components/products/ProductFAQSection";
+import ProductCTAs from "@/components/products/ProductCTAs";
+import StockPill from "@/components/products/StockPill";
 import ToneSelector from "@/components/products/ToneSelector";
 import VariantSelector from "@/components/products/VariantSelector";
 import { formatInches } from "@/lib/units";
@@ -22,11 +24,37 @@ export async function generateMetadata({
   const catalog = await getCatalog();
   const variant = findVariant(productSlug, vSlug, catalog);
   if (!variant) return { title: "Product not found | SARO TECH USA" };
+
+  const label = variantLabel(variant);
+  const title = `${variant.name}, ${label} | SARO TECH USA`;
+  const description =
+    variant.detail?.description ??
+    `${variant.name} in ${variant.variantName}. Premium WPC architectural finish from SARO TECH.`;
+  // Variant image is the most relevant OG card for a specific SKU; falls
+  // back to the site default when HL hasn't supplied a CDN image yet.
+  const ogImage = variant.image
+    ? [{ url: variant.image, alt: `${variant.name}, ${label}` }]
+    : undefined;
+
   return {
-    title: `${variant.name} — ${variantLabel(variant)} | SARO TECH USA`,
-    description:
-      variant.detail?.description ??
-      `${variant.name} in ${variant.variantName}. Premium WPC architectural finish from SARO TECH.`,
+    title,
+    description,
+    alternates: {
+      canonical: `/products/${productSlug}/${vSlug}`,
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `/products/${productSlug}/${vSlug}`,
+      ...(ogImage ? { images: ogImage } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(ogImage ? { images: ogImage.map((i) => i.url) } : {}),
+    },
   };
 }
 
@@ -125,6 +153,11 @@ export default async function ProductVariantPage({
                 <span className="product-detail-tone mt-1 block text-[14.4px] text-gray-500">
                   {variantCode}
                 </span>
+                {variant.inventory && (
+                  <div className="mt-3">
+                    <StockPill inventory={variant.inventory} size="md" />
+                  </div>
+                )}
               </div>
 
               <div className="product-image-section relative mx-auto h-[340px] w-full max-w-[420px] overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto">
@@ -198,22 +231,20 @@ export default async function ProductVariantPage({
               </div>
 
               {/* CTAs */}
-              <div className="product-cta-section mt-2 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href={`/contact?product=${encodeURIComponent(
-                    variant.name
-                  )}&variant=${encodeURIComponent(variantCode)}`}
-                  className="inline-flex flex-1 items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light"
-                >
-                  Get a Quote
-                </Link>
-                <a
-                  href="#calculator"
-                  className="inline-flex flex-1 items-center justify-center rounded border border-saro-dark px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-saro-dark transition-colors hover:bg-saro-dark hover:text-white"
-                >
-                  Calculate Material
-                </a>
-              </div>
+              <ProductCTAs
+                productName={variant.name}
+                variantCode={variantCode}
+                sku={variant.skuNumber || variant.sku}
+                inventory={variant.inventory}
+                price={variant.price}
+                listPrice={variant.listPrice}
+              />
+              <a
+                href="#calculator"
+                className="-mt-1 inline-flex items-center gap-1 text-[13px] font-medium text-saro-dark underline-offset-4 transition-colors hover:text-saro-green hover:underline"
+              >
+                Calculate material for your project →
+              </a>
             </div>
           </div>
         </main>

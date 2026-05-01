@@ -9,6 +9,8 @@ interface SortControlsProps {
   onPerPageChange: (n: number) => void;
   filtersVisible: boolean;
   onToggleFilters: () => void;
+  inStockOnly: boolean;
+  onInStockOnlyChange: (next: boolean) => void;
 }
 
 const sortOptions = [
@@ -103,12 +105,35 @@ export default function SortControls({
   onPerPageChange,
   filtersVisible,
   onToggleFilters,
+  inStockOnly,
+  onInStockOnlyChange,
 }: SortControlsProps) {
   const currentSortLabel =
     sortOptions.find((o) => o.value === sortBy)?.label ?? "Sort by";
 
   return (
-    <div className="view-controls flex items-center justify-end gap-8">
+    <div className="view-controls flex items-center justify-end gap-6">
+      <label className="flex cursor-pointer items-center gap-2 text-[14px] text-gray-600 transition-colors hover:text-saro-dark">
+        <span
+          className={`relative inline-flex h-[20px] w-[36px] flex-shrink-0 rounded-full transition-colors ${
+            inStockOnly ? "bg-saro-green" : "bg-gray-300"
+          }`}
+        >
+          <input
+            type="checkbox"
+            checked={inStockOnly}
+            onChange={(e) => onInStockOnlyChange(e.target.checked)}
+            className="absolute h-0 w-0 opacity-0"
+          />
+          <span
+            className={`absolute top-[2px] inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              inStockOnly ? "translate-x-[18px]" : "translate-x-[2px]"
+            }`}
+          />
+        </span>
+        <span>In stock only</span>
+      </label>
+
       <button
         type="button"
         onClick={onToggleFilters}

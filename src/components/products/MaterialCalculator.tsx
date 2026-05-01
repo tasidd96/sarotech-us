@@ -25,8 +25,9 @@ export default function MaterialCalculator({
   const [widthFt, setWidthFt] = useState("");
   const [heightFt, setHeightFt] = useState("");
 
-  // Derive per-piece and per-box coverage from product dimensions when available.
-  // Stored sqftPerBox wins if present (it's the canonical marketing number).
+  // Derive per-piece coverage from product dimensions when available.
+  // sqftPerBox (canonical marketing number) wins for box math; if it's
+  // missing but we know piecesPerBox, derive it from per-piece × pieces.
   const sqftPerPiece =
     dimensions && dimensions.widthIn > 0 && dimensions.heightIn > 0
       ? (dimensions.widthIn * dimensions.heightIn) / 144
@@ -35,7 +36,10 @@ export default function MaterialCalculator({
     sqftPerBox ??
     (sqftPerPiece && piecesPerBox ? sqftPerPiece * piecesPerBox : undefined);
 
-  const canCalculate = !!effectiveSqftPerBox;
+  // Calculator runs as soon as we know either per-piece or per-box coverage.
+  // Per-piece alone is enough to count pieces; boxes column simply hides when
+  // we don't have enough info to derive whole-box quantities.
+  const canCalculate = !!sqftPerPiece || !!effectiveSqftPerBox;
 
   const { totalSqft, pieces, boxes, coveredSqft, hasInput } = useMemo(() => {
     let total = 0;
@@ -60,15 +64,23 @@ export default function MaterialCalculator({
     const exactPieces = sqftPerPiece
       ? Math.ceil(usableTotal / sqftPerPiece)
       : 0;
-    // Prefer rounding up to whole boxes; derive piece count from boxes when
-    // we have piecesPerBox so "pieces" reflects what actually ships.
-    const boxCount = Math.ceil(usableTotal / (effectiveSqftPerBox as number));
-    const pieceCount = perBox > 0 ? boxCount * perBox : exactPieces;
+    // Round up to whole boxes when we know per-box coverage; otherwise
+    // pieces are reported directly from per-piece coverage.
+    const boxCount = effectiveSqftPerBox
+      ? Math.ceil(usableTotal / effectiveSqftPerBox)
+      : 0;
+    const pieceCount =
+      effectiveSqftPerBox && perBox > 0 ? boxCount * perBox : exactPieces;
+    const covered = effectiveSqftPerBox
+      ? boxCount * effectiveSqftPerBox
+      : sqftPerPiece
+      ? exactPieces * sqftPerPiece
+      : usableTotal;
     return {
       totalSqft: usableTotal,
       pieces: pieceCount,
       boxes: boxCount,
-      coveredSqft: boxCount * (effectiveSqftPerBox as number),
+      coveredSqft: covered,
       hasInput: true,
     };
   }, [
@@ -92,6 +104,18 @@ export default function MaterialCalculator({
     (boxes ? `&boxes=${boxes}` : "") +
     (totalSqft ? `&sqft=${totalSqft}` : "");
 
+  // Result columns are conditional: only show what we can actually compute.
+  const resultColumns: { label: string; value: string }[] = [
+    { label: "Total ft²", value: fmt(totalSqft) },
+  ];
+  if (sqftPerPiece) {
+    resultColumns.push({ label: "Pieces", value: pieces.toString() });
+  }
+  if (effectiveSqftPerBox) {
+    resultColumns.push({ label: "Boxes", value: boxes.toString() });
+  }
+  resultColumns.push({ label: "ft² Covered", value: fmt(coveredSqft) });
+
   return (
     <section
       id="calculator"
@@ -102,11 +126,11 @@ export default function MaterialCalculator({
           <h2 className="calculator-title text-[24px] font-semibold text-saro-dark">
             Calculate how much material you need for your project
           </h2>
-          {sqftPerPiece && (
+          {(sqftPerPiece || effectiveSqftPerBox) && (
             <p className="mt-1 text-[13px] text-gray-600">
-              Each piece covers {sqftPerPiece.toFixed(2)} ft²
+              {sqftPerPiece && `Each piece covers ${sqftPerPiece.toFixed(2)} ft²`}
               {effectiveSqftPerBox
-                ? ` · ${effectiveSqftPerBox.toFixed(1)} ft² per box`
+                ? `${sqftPerPiece ? " · " : ""}${effectiveSqftPerBox.toFixed(1)} ft² per box`
                 : ""}
             </p>
           )}
@@ -185,15 +209,16 @@ export default function MaterialCalculator({
                   </span>
                 </div>
               )}
+              {!effectiveSqftPerBox && (
+                <p className="text-[12px] italic text-gray-500">
+                  Per-box coverage isn&apos;t published for this variant. Piece
+                  count is exact, ask sales for box quantities.
+                </p>
+              )}
             </div>
 
             {/* Result columns */}
-            {[
-              { label: "Total ft²", value: fmt(totalSqft) },
-              { label: "Pieces", value: pieces.toString() },
-              { label: "Boxes", value: boxes.toString() },
-              { label: "ft² Covered", value: fmt(coveredSqft) },
-            ].map((r) => (
+            {resultColumns.map((r) => (
               <div
                 key={r.label}
                 className="result-column flex flex-col text-center"
@@ -209,7 +234,7 @@ export default function MaterialCalculator({
           </div>
         ) : (
           <p className="text-center text-[14px] text-gray-600">
-            Per-box coverage isn&apos;t published for this product yet. Contact
+            Coverage details aren&apos;t published for this product yet. Contact
             us for a tailored quote.
           </p>
         )}

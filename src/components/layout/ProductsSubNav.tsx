@@ -47,7 +47,7 @@ export default function ProductsSubNav({ typesByCategory }: Props) {
 
   return (
     <div
-      className="products-menu-container white-menu relative"
+      className="products-menu-container white-menu relative hidden md:block"
       style={{ backgroundColor: "rgb(26,26,26)", height: "64px" }}
       onMouseLeave={scheduleClose}
     >

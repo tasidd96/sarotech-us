@@ -34,6 +34,7 @@ export default function ProductsPageClient({
   const [perPage, setPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersVisible, setFiltersVisible] = useState(true);
+  const [inStockOnly, setInStockOnly] = useState(false);
 
   // Clicking the active category deselects it (toggle to null).
   const handleCategoryChange = (cat: ProductCategory | null) => {
@@ -55,6 +56,12 @@ export default function ProductsPageClient({
     setSelectedTypes([]);
     setSearchQuery("");
     setSortBy("name-asc");
+    setCurrentPage(1);
+    setInStockOnly(false);
+  };
+
+  const handleInStockOnlyChange = (next: boolean) => {
+    setInStockOnly(next);
     setCurrentPage(1);
   };
 
@@ -79,6 +86,9 @@ export default function ProductsPageClient({
     if (selectedTypes.length > 0) {
       result = result.filter((p) => selectedTypes.includes(p.productType));
     }
+    if (inStockOnly) {
+      result = result.filter((p) => (p.inventory?.available ?? 0) > 0);
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -100,7 +110,7 @@ export default function ProductsPageClient({
       }
     });
     return result;
-  }, [activeCategory, selectedTypes, searchQuery, sortBy, products]);
+  }, [activeCategory, selectedTypes, searchQuery, sortBy, products, inStockOnly]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated = filtered.slice(
@@ -130,6 +140,8 @@ export default function ProductsPageClient({
             setPerPage(n);
             setCurrentPage(1);
           }}
+          inStockOnly={inStockOnly}
+          onInStockOnlyChange={handleInStockOnlyChange}
           onClearAll={handleClearAll}
         />
 
@@ -180,6 +192,8 @@ export default function ProductsPageClient({
                   }}
                   filtersVisible={filtersVisible}
                   onToggleFilters={() => setFiltersVisible(!filtersVisible)}
+                  inStockOnly={inStockOnly}
+                  onInStockOnlyChange={handleInStockOnlyChange}
                 />
               ) : (
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -197,6 +211,8 @@ export default function ProductsPageClient({
                     }}
                     filtersVisible={filtersVisible}
                     onToggleFilters={() => setFiltersVisible(!filtersVisible)}
+                    inStockOnly={inStockOnly}
+                    onInStockOnlyChange={handleInStockOnlyChange}
                   />
                 </div>
               )}
