@@ -65,6 +65,12 @@ export interface Product {
   productType: ProductType;
   image: string;
   price?: number;
+  /**
+   * Optional MSRP / list price from HL's `compareAtPrice`. When set and
+   * higher than `price`, the UI renders a struck-through list price next
+   * to the sell price plus a "% off" badge.
+   */
+  listPrice?: number;
   featured?: boolean;
   inventory?: Inventory;
   detail?: ProductDetail;

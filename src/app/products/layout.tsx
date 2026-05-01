@@ -4,10 +4,25 @@ import { getCatalog } from "@/lib/catalog";
 import { categoriesForProduct } from "@/lib/category";
 import { ProductCategory, ProductType } from "@/lib/types";
 
+const PRODUCTS_TITLE = "Products";
+const PRODUCTS_DESCRIPTION =
+  "Browse SARO TECH's full catalog of WPC wall panels, floor decking, synthetic marble, wall cladding, and accessories. Premium architectural finishes for interior and exterior projects.";
+
 export const metadata: Metadata = {
-  title: "Products",
-  description:
-    "Browse SARO TECH's full catalog of WPC wall panels, floor decking, synthetic marble, wall cladding, and accessories. Premium architectural finishes for interior and exterior projects.",
+  title: PRODUCTS_TITLE,
+  description: PRODUCTS_DESCRIPTION,
+  alternates: { canonical: "/products" },
+  openGraph: {
+    type: "website",
+    title: `${PRODUCTS_TITLE} | SARO TECH USA`,
+    description: PRODUCTS_DESCRIPTION,
+    url: "/products",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${PRODUCTS_TITLE} | SARO TECH USA`,
+    description: PRODUCTS_DESCRIPTION,
+  },
 };
 
 export default async function ProductsLayout({

@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { productSlug, variantSlug, variantLabel } from "@/lib/slug";
+import StockPill from "./StockPill";
+import PriceBlock from "./PriceBlock";
 
 export default function ProductCard({ product }: { product: Product }) {
   const toneSuffix = product.detail?.toneFamily
@@ -16,6 +18,11 @@ export default function ProductCard({ product }: { product: Product }) {
       className="products-page-card group flex w-full flex-col transition-transform duration-200 hover:-translate-y-[2px]"
     >
       <div className="products-page-image relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm bg-gray-100">
+        {product.inventory && (
+          <div className="absolute left-2 top-2 z-10">
+            <StockPill inventory={product.inventory} />
+          </div>
+        )}
         <Image
           src={product.image}
           alt={label}
@@ -35,6 +42,15 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="products-page-variant text-[12px] text-[#888]">
           {label}
         </p>
+        {typeof product.price === "number" && (
+          <div className="mt-2">
+            <PriceBlock
+              price={product.price}
+              listPrice={product.listPrice}
+              align="center"
+            />
+          </div>
+        )}
       </div>
     </Link>
   );

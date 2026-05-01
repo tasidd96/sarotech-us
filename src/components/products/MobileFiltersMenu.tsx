@@ -16,6 +16,8 @@ interface Props {
   onSortChange: (s: string) => void;
   perPage: number;
   onPerPageChange: (n: number) => void;
+  inStockOnly: boolean;
+  onInStockOnlyChange: (next: boolean) => void;
   onClearAll: () => void;
 }
 
@@ -55,6 +57,8 @@ export default function MobileFiltersMenu(props: Props) {
     onSortChange,
     perPage,
     onPerPageChange,
+    inStockOnly,
+    onInStockOnlyChange,
     onClearAll,
   } = props;
 
@@ -125,6 +129,28 @@ export default function MobileFiltersMenu(props: Props) {
           />
         </div>
 
+        {/* In-stock-only toggle */}
+        <label className="flex cursor-pointer items-center justify-between border-b border-gray-200 py-3 text-[14px] text-saro-dark">
+          <span>In stock only</span>
+          <span
+            className={`relative inline-flex h-[20px] w-[36px] flex-shrink-0 rounded-full transition-colors ${
+              inStockOnly ? "bg-saro-green" : "bg-gray-300"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={inStockOnly}
+              onChange={(e) => onInStockOnlyChange(e.target.checked)}
+              className="absolute h-0 w-0 opacity-0"
+            />
+            <span
+              className={`absolute top-[2px] inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                inStockOnly ? "translate-x-[18px]" : "translate-x-[2px]"
+              }`}
+            />
+          </span>
+        </label>
+
         {/* Accordion sections */}
         <AccordionSection
           title="Filter by category"
@@ -138,7 +164,13 @@ export default function MobileFiltersMenu(props: Props) {
                 <button
                   key={c.id}
                   type="button"
-                  onClick={() => onCategoryChange(c.id)}
+                  onClick={() => {
+                    onCategoryChange(c.id);
+                    // Close the drawer once a category is picked so the user
+                    // immediately sees the filtered grid. Without this the
+                    // drawer stays open across in-page nav and feels stuck.
+                    setOpen(false);
+                  }}
                   className={`rounded-full border px-4 py-1.5 text-[13px] transition-colors duration-300 ${
                     active
                       ? "border-saro-green bg-saro-green text-white"
