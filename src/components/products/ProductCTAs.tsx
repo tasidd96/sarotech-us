@@ -139,11 +139,13 @@ export default function ProductCTAs({
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      {/* Outer wrapper goes from stacked (mobile) to a single row (sm+) so the
-          stepper / pricing context / Request-a-Quote button can sit on one
-          line when there's room and stack vertically when there isn't. */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+      {/* Outer wrapper: stacked on mobile, a single tight nowrap row on sm+
+          so qty stepper · estimated subtotal · request-a-quote button never
+          break to multiple lines on desktop. The inner stepper-row still
+          wraps internally if subtotal + calc-context get too wide, but the
+          button stays anchored on the right with shrink-0 + nowrap. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-center sm:gap-4">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
           {/* Stepper — 44px tap targets for thumbs */}
           <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button
@@ -204,16 +206,23 @@ export default function ProductCTAs({
             <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
               From your calculation
             </span>
+            {/* Comma-separated calc context: "200 ft², 15 boxes,
+                +10% overage". Talha asked to drop the · dot separator
+                so the line reads as a normal sentence fragment. */}
             <span className="text-[13px] text-saro-dark">
-              {calcContext.totalSqft !== undefined &&
-                `${calcContext.totalSqft} ft²`}
-              {calcContext.totalSqft !== undefined &&
-              calcContext.boxes !== undefined
-                ? " · "
-                : ""}
-              {calcContext.boxes !== undefined &&
-                `${calcContext.boxes} box${calcContext.boxes === 1 ? "" : "es"}`}
-              {calcContext.overage ? " · +10% overage" : ""}
+              {[
+                calcContext.totalSqft !== undefined
+                  ? `${calcContext.totalSqft} ft²`
+                  : null,
+                calcContext.boxes !== undefined
+                  ? `${calcContext.boxes} box${
+                      calcContext.boxes === 1 ? "" : "es"
+                    }`
+                  : null,
+                calcContext.overage ? "+10% overage" : null,
+              ]
+                .filter(Boolean)
+                .join(", ")}
             </span>
           </div>
         )}
@@ -221,7 +230,7 @@ export default function ProductCTAs({
 
         <Link
           href={quoteHref}
-          className="inline-flex w-full items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto"
+          className="inline-flex w-full flex-shrink-0 items-center justify-center whitespace-nowrap rounded bg-saro-dark px-6 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-black sm:w-auto"
         >
           Request a Quote
         </Link>

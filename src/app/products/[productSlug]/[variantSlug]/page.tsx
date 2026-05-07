@@ -144,26 +144,20 @@ export default async function ProductVariantPage({
             {/* LEFT COLUMN — title block + main image */}
             <div className="product-left-column flex flex-col gap-[30px]">
               <div className="product-title-section">
-                {/* Inline title row: product name, secondary axis dropdown
-                    (Size/Rib — no Color, swatches handle that), category
-                    label, and stock pill all share one flex-wrap row so
-                    they sit on the same line whenever there's room. On
-                    narrow viewports they wrap gracefully without falling
-                    into rigid stacked blocks. */}
-                <div className="product-title-row flex flex-wrap items-baseline gap-x-3 gap-y-2">
+                {/* Title row: just product name + category label. */}
+                <div className="product-title-row flex items-baseline gap-3">
                   <h1 className="product-title text-[26px] font-medium leading-tight text-saro-dark">
                     {variant.name}
                   </h1>
-                  {variant.variantAxes && variant.variantAxes.length > 0 && (
-                    <VariantAxisDropdowns
-                      product={variant}
-                      siblings={siblings}
-                      productSlug={productSlug}
-                    />
-                  )}
                   <span className="product-detail-category text-[14px] font-normal text-gray-500">
                     {CATEGORY_LABEL[variant.category]}
                   </span>
+                </div>
+                {/* Variant-code row, with the stock pill inline beside it
+                    (e.g. "10109-Decking · IN STOCK · 30% OFF"). The pill
+                    sits next to the variantCode, not next to the H1. */}
+                <div className="product-detail-tone mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14.4px] text-gray-500">
+                  <span>{variantCode}</span>
                   {variant.inventory && (
                     <StockPill
                       inventory={variant.inventory}
@@ -174,9 +168,6 @@ export default async function ProductVariantPage({
                     />
                   )}
                 </div>
-                <span className="product-detail-tone mt-1 block text-[14.4px] text-gray-500">
-                  {variantCode}
-                </span>
               </div>
 
               <div className="product-image-section relative mx-auto h-[340px] w-full overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto lg:max-w-none">
@@ -191,17 +182,25 @@ export default async function ProductVariantPage({
               </div>
             </div>
 
-            {/* RIGHT COLUMN — swatch grid + specs + CTAs.
-                Non-Color axis dropdowns (Size/Rib) live inline with the
-                H1 in the left column; only the visual swatch grid stays
-                here. */}
+            {/* RIGHT COLUMN — non-Color axis dropdowns + swatch grid +
+                specs + CTAs. Color is intentionally absent from the
+                dropdown list (the swatch grid is the color picker). */}
             <div className="product-right-column flex flex-col gap-[25px] pt-5">
               {variant.variantAxes && variant.variantAxes.length > 0 ? (
-                <VariantSwatches
-                  product={variant}
-                  siblings={siblings}
-                  productSlug={productSlug}
-                />
+                <>
+                  <div className="product-axis-section border-t-2 border-black p-[10px]">
+                    <VariantAxisDropdowns
+                      product={variant}
+                      siblings={siblings}
+                      productSlug={productSlug}
+                    />
+                  </div>
+                  <VariantSwatches
+                    product={variant}
+                    siblings={siblings}
+                    productSlug={productSlug}
+                  />
+                </>
               ) : (
                 <ToneSelector
                   siblings={siblings}

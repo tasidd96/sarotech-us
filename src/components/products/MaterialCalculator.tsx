@@ -285,16 +285,21 @@ export default function MaterialCalculator({
           </p>
         )}
 
-        <div className="calculator-footer-row flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        {/* Footer row stacks until lg (tablet stays in mobile-style stacked
+            layout), then goes side-by-side on desktop. Earlier the breakpoint
+            was `sm:` which collapsed tablet onto a single line that's too
+            cramped for the toggle + button. */}
+        <div className="calculator-footer-row flex flex-col items-stretch gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
           {/* Overage toggle replaces the static "+10%" recommendation. Default
-              ON; clicking flips it. The flag travels into the quote URL +
-              body so sales sees whether the qty already includes the buffer. */}
+              ON; clicking flips it. Full-width on mobile/tablet, intrinsic
+              width on desktop. The flag travels into the quote URL + body so
+              sales sees whether the qty already includes the buffer. */}
           <button
             type="button"
             role="switch"
             aria-checked={overage}
             onClick={() => setOverage((v) => !v)}
-            className={`overage-toggle inline-flex items-center gap-2 self-start rounded-full border px-4 py-2 text-[13px] font-medium transition-colors ${
+            className={`overage-toggle inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2 text-[13px] font-medium transition-colors lg:w-auto lg:justify-start ${
               overage
                 ? "border-saro-green bg-saro-green text-white hover:bg-saro-green-light"
                 : "border-gray-400 bg-white text-saro-dark hover:border-saro-green hover:text-saro-green"
@@ -334,7 +339,7 @@ export default function MaterialCalculator({
           <a
             href={quoteHref}
             aria-disabled={!hasInput}
-            className={`inline-flex w-full items-center justify-center rounded px-8 py-3 text-center text-[14px] font-semibold uppercase tracking-wider text-white transition-colors sm:w-auto ${
+            className={`inline-flex w-full items-center justify-center rounded px-8 py-3 text-center text-[14px] font-semibold uppercase tracking-wider text-white transition-colors lg:w-auto ${
               hasInput
                 ? "bg-gray-700 hover:bg-gray-800"
                 : "bg-[#999] pointer-events-none"

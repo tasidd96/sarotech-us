@@ -25,7 +25,7 @@ export default function FeaturedProject() {
                   <li>Facade Systems</li>
                   <li>Exterior Cladding</li>
                   <li>High-Performance Decking</li>
-                  <li>Wall Panels</li>
+                  <li>Wall Cladding</li>
                 </ul>
               </div>
               <div>
