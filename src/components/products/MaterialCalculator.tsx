@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductDimensions } from "@/lib/types";
+import { buildQuoteUrl } from "@/lib/quote";
 
 type Props = {
   dimensions?: ProductDimensions;
@@ -9,7 +10,22 @@ type Props = {
   sqftPerBox?: number;
   productName: string;
   variantCode: string;
+  sku?: string;
+  price?: number;
+  listPrice?: number;
 };
+
+/**
+ * Detail dispatched on `saro:calculator-result` after a successful calc.
+ * ProductCTAs subscribes so the quantity stepper auto-updates and the
+ * quote URL it builds carries the same calc context as this calculator's
+ * own button.
+ */
+export interface CalculatorResultEvent {
+  pieces: number;
+  boxes: number;
+  totalSqft: number;
+}
 
 type Mode = "sqft" | "dimensions";
 
@@ -19,6 +35,9 @@ export default function MaterialCalculator({
   sqftPerBox,
   productName,
   variantCode,
+  sku,
+  price,
+  listPrice,
 }: Props) {
   const [mode, setMode] = useState<Mode>("sqft");
   const [sqft, setSqft] = useState("");
@@ -97,12 +116,30 @@ export default function MaterialCalculator({
   const fmt = (n: number) =>
     n === 0 ? "0" : Number.isInteger(n) ? n.toString() : n.toFixed(1);
 
-  const quoteHref =
-    "/contact" +
-    `?product=${encodeURIComponent(productName)}` +
-    `&variant=${encodeURIComponent(variantCode)}` +
-    (boxes ? `&boxes=${boxes}` : "") +
-    (totalSqft ? `&sqft=${totalSqft}` : "");
+  // Whenever the user produces a meaningful calc result, broadcast it so
+  // the PDP's CTA stepper (further up the page) can auto-fill its quantity
+  // input and surface a subtotal that matches the project size.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!hasInput || !canCalculate) return;
+    const detail: CalculatorResultEvent = {
+      pieces,
+      boxes,
+      totalSqft,
+    };
+    window.dispatchEvent(new CustomEvent("saro:calculator-result", { detail }));
+  }, [hasInput, canCalculate, pieces, boxes, totalSqft]);
+
+  const quoteHref = buildQuoteUrl({
+    productName,
+    variantCode,
+    sku,
+    quantity: pieces > 0 ? pieces : undefined,
+    boxes: boxes > 0 ? boxes : undefined,
+    totalSqft: totalSqft > 0 ? totalSqft : undefined,
+    price,
+    listPrice,
+  });
 
   // Result columns are conditional: only show what we can actually compute.
   const resultColumns: { label: string; value: string }[] = [
@@ -253,7 +290,7 @@ export default function MaterialCalculator({
                 : "bg-[#999] pointer-events-none"
             }`}
           >
-            Get a Quote
+            Request a Quote
           </a>
         </div>
       </div>

@@ -8,17 +8,28 @@ export default function ContactForm() {
   const productParam = searchParams.get("product") ?? "";
   const variantParam = searchParams.get("variant") ?? "";
   const boxesParam = searchParams.get("boxes") ?? "";
+  const qtyParam = searchParams.get("qty") ?? "";
+  const sqftParam = searchParams.get("sqft") ?? "";
+  const priceParam = searchParams.get("price") ?? "";
+  // PDP CTAs and the calculator route through buildQuoteUrl(), which
+  // includes a pre-formatted `body` param. When present, it's used verbatim
+  // — the form below the textarea also still constructs a fallback message
+  // from the individual params (older entry points) so nothing is lost.
+  const bodyParam = searchParams.get("body") ?? "";
 
   const prefilledMessage = useMemo(() => {
-    if (!productParam && !variantParam && !boxesParam) return "";
+    if (bodyParam) return bodyParam;
+    if (!productParam && !variantParam && !boxesParam && !qtyParam) return "";
     const parts: string[] = ["Hi SARO TECH team,", ""];
-    parts.push("I&rsquo;d like a quote for:");
+    parts.push("I'd like a quote for:");
     if (productParam) parts.push(`• Product: ${productParam}`);
     if (variantParam) parts.push(`• Variant: ${variantParam}`);
-    if (boxesParam) parts.push(`• Quantity: ${boxesParam} box(es)`);
+    if (qtyParam) parts.push(`• Quantity: ${qtyParam} pcs`);
+    if (boxesParam) parts.push(`• Boxes: ${boxesParam}`);
+    if (sqftParam) parts.push(`• Project area: ${sqftParam} ft²`);
     parts.push("", "Thanks!");
-    return parts.join("\n").replace(/&rsquo;/g, "’");
-  }, [productParam, variantParam, boxesParam]);
+    return parts.join("\n");
+  }, [bodyParam, productParam, variantParam, boxesParam, qtyParam, sqftParam]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,13 +55,16 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {(productParam || variantParam || boxesParam) && (
+      {(productParam || variantParam || qtyParam || boxesParam || sqftParam) && (
         <div className="rounded-md border border-saro-green/30 bg-saro-green/5 p-4 text-sm text-saro-dark">
           <p className="mb-1 font-semibold">Quote request prefilled</p>
           <p className="text-gray-700">
             {productParam && <>Product: {productParam}. </>}
             {variantParam && <>Variant: {variantParam}. </>}
-            {boxesParam && <>Quantity: {boxesParam} box(es).</>}
+            {qtyParam && <>Quantity: {qtyParam} pcs. </>}
+            {boxesParam && <>Boxes: {boxesParam}. </>}
+            {sqftParam && <>Area: {sqftParam} ft². </>}
+            {priceParam && <>Unit price: ${priceParam}.</>}
           </p>
         </div>
       )}
