@@ -39,24 +39,19 @@ export default function ContactPage() {
               <div>
                 <h2 className="mb-3 text-lg font-semibold">Houston HQ</h2>
                 <p className="text-sm text-gray-700">
-                  1210 Leer Street, Houston, TX
+                  1210 Lear Street
                   <br />
-                  <span className="text-gray-500">(Warehouse)</span>
-                </p>
-                <p className="mt-2 text-sm text-gray-700">
-                  7676 Hilmont Street, Houston, TX
-                  <br />
-                  <span className="text-gray-500">(Office)</span>
+                  Houston, TX 77015
                 </p>
               </div>
 
               <div>
                 <h2 className="mb-3 text-lg font-semibold">Call Us</h2>
                 <a
-                  href="tel:+18325551234"
+                  href="tel:+18324476566"
                   className="text-sm text-saro-green hover:underline"
                 >
-                  (832) 555-1234
+                  (832) 447-6566
                 </a>
                 <p className="mt-1 text-xs text-gray-500">Mon–Fri · 8am–5pm CT</p>
               </div>

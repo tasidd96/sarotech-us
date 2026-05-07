@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { productSlug, variantSlug, variantLabel } from "@/lib/slug";
+import { discountPercent } from "@/lib/price";
 import StockPill from "./StockPill";
-import PriceBlock from "./PriceBlock";
 
 export default function ProductCard({ product }: { product: Product }) {
   const toneSuffix = product.detail?.toneFamily
@@ -11,6 +11,10 @@ export default function ProductCard({ product }: { product: Product }) {
     : "";
   const href = `/products/${productSlug(product)}/${variantSlug(product)}`;
   const label = variantLabel(product);
+  // Compute discount % from the (still-present, but-not-shown) price/listPrice
+  // pair. The pill renders "% off" inline; actual dollar figures stay hidden
+  // pending the rewards-program paywall.
+  const off = discountPercent(product.price, product.listPrice);
 
   return (
     <Link
@@ -20,7 +24,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="products-page-image relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm bg-gray-100">
         {product.inventory && (
           <div className="absolute left-2 top-2 z-10">
-            <StockPill inventory={product.inventory} />
+            <StockPill inventory={product.inventory} discountPercent={off} />
           </div>
         )}
         <Image
@@ -42,15 +46,6 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="products-page-variant text-[12px] text-[#888]">
           {label}
         </p>
-        {typeof product.price === "number" && (
-          <div className="mt-2">
-            <PriceBlock
-              price={product.price}
-              listPrice={product.listPrice}
-              align="center"
-            />
-          </div>
-        )}
       </div>
     </Link>
   );

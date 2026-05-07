@@ -12,6 +12,7 @@ import StockPill from "@/components/products/StockPill";
 import ToneSelector from "@/components/products/ToneSelector";
 import VariantSelector from "@/components/products/VariantSelector";
 import { formatInches } from "@/lib/units";
+import { discountPercent } from "@/lib/price";
 
 type PageParams = { productSlug: string; variantSlug: string };
 
@@ -155,7 +156,14 @@ export default async function ProductVariantPage({
                 </span>
                 {variant.inventory && (
                   <div className="mt-3">
-                    <StockPill inventory={variant.inventory} size="md" />
+                    <StockPill
+                      inventory={variant.inventory}
+                      size="md"
+                      discountPercent={discountPercent(
+                        variant.price,
+                        variant.listPrice
+                      )}
+                    />
                   </div>
                 )}
               </div>
@@ -220,15 +228,17 @@ export default async function ProductVariantPage({
                 </span>
               </div>
 
-              {/* Presentation */}
-              <div className="product-presentation-section flex items-center justify-between border-t-2 border-black p-[10px]">
-                <span className="presentation-label text-[16px] font-medium text-saro-dark">
-                  Presentation
-                </span>
-                <span className="presentation-value text-[14.4px] text-saro-dark">
-                  {piecesPerBox ? `${piecesPerBox} pieces per box` : "—"}
-                </span>
-              </div>
+              {/* Presentation — only shown when we have box-quantity data. */}
+              {piecesPerBox ? (
+                <div className="product-presentation-section flex items-center justify-between border-t-2 border-black p-[10px]">
+                  <span className="presentation-label text-[16px] font-medium text-saro-dark">
+                    Presentation
+                  </span>
+                  <span className="presentation-value text-[14.4px] text-saro-dark">
+                    {piecesPerBox} pieces per box
+                  </span>
+                </div>
+              ) : null}
 
               {/* CTAs */}
               <ProductCTAs
@@ -249,13 +259,18 @@ export default async function ProductVariantPage({
           </div>
         </main>
 
-        {/* Section 2 — Calculator band (full-width gray background) */}
+        {/* Section 2 — Calculator band (full-width gray background). Pricing
+            + sku flow through so the calculator's quote button carries the
+            same context as the CTA section above. */}
         <MaterialCalculator
           dimensions={dims}
           sqftPerBox={variant.detail?.sqftPerBox}
           piecesPerBox={piecesPerBox}
           productName={variant.name}
           variantCode={variantCode}
+          sku={variant.skuNumber || variant.sku}
+          price={variant.price}
+          listPrice={variant.listPrice}
         />
 
         {/* Section 3 — Info accordions + technical drawing */}

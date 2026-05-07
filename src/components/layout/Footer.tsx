@@ -75,7 +75,14 @@ export default function Footer() {
               height={50}
               style={{ width: 50, height: "auto", flexShrink: 0 }}
             />
-            <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+            {/* flex + flex-wrap puts prefix and the typing suffix side-by-side
+                when the footer is wide enough; only wraps when the viewport
+                forces it. items-baseline keeps the typing cursor aligned with
+                the prefix text once they share a row. */}
+            <div
+              className="flex flex-wrap items-baseline gap-x-2"
+              style={{ flex: "1 1 260px", minWidth: 0 }}
+            >
               <p className="m-0 text-[1rem] leading-[1.4] text-white sm:text-[1.15rem] lg:text-[1.2rem]">
                 {FOOTER_TAGLINE_PREFIX}
               </p>
@@ -159,7 +166,7 @@ export default function Footer() {
                 Contact
               </p>
               <a
-                href="tel:+18325551234"
+                href="tel:+18324476566"
                 style={{
                   fontFamily: "PasticheGrotesque, Arial, sans-serif",
                   color: "#fff",
@@ -167,7 +174,7 @@ export default function Footer() {
                   fontSize: "0.95rem",
                 }}
               >
-                (832) 555-1234
+                (832) 447-6566
               </a>
             </div>
 

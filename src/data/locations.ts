@@ -6,8 +6,8 @@ export const locations: Location[] = [
     name: "Houston",
     city: "Houston",
     state: "Texas",
-    address: "Serving the greater Houston metro area.",
-    phone: "+1 (832) 555-1234",
+    address: "1210 Lear Street, Houston, TX 77015",
+    phone: "+1 (832) 447-6566",
   },
   {
     id: "san-antonio",

@@ -90,7 +90,13 @@ export function useDragScroll<T extends HTMLElement = HTMLElement>() {
     onPointerCancel: endDrag,
     onDragStart,
     onClickCapture,
-    style: { touchAction: "pan-y" as const },
+    // `pan-x pan-y` keeps both axes available to native touch:
+    //   - horizontal swipe scrolls the carousel (was broken with `pan-y`,
+    //     which let the browser block horizontal pan entirely)
+    //   - vertical swipe falls through to the page so the user can still
+    //     scroll the rest of the page even with their finger on a tile
+    // Pinch-to-zoom is disabled, which is the desired UX for a carousel.
+    style: { touchAction: "pan-x pan-y" as const },
   };
 
   const dragClassName = isDragging ? "cursor-grabbing select-none" : "cursor-grab";

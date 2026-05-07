@@ -36,16 +36,16 @@ export default function HeroBanner() {
         <p className="mb-6 max-w-[500px] text-[14px] leading-relaxed text-gray-300">
           Premium WPC siding, decking, and wall panels built for strength, style, and sustainability. Serving contractors, developers, and wholesalers from our Houston warehouse across the Southwest.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <Link
             href="/contact"
-            className="inline-block rounded bg-saro-green px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-saro-green-light"
+            className="inline-flex w-full items-center justify-center rounded bg-saro-green px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-saro-green-light sm:w-auto"
           >
             Start a Quote
           </Link>
           <Link
             href="/products"
-            className="inline-block rounded border border-white/30 px-8 py-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10"
+            className="inline-flex w-full items-center justify-center rounded border border-white/30 px-8 py-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 sm:w-auto"
           >
             See Products
           </Link>

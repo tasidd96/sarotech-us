@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Inventory } from "@/lib/types";
-import PriceBlock from "./PriceBlock";
 import { discountPercent, formatUSD } from "@/lib/price";
+import { buildQuoteUrl } from "@/lib/quote";
+import type { CalculatorResultEvent } from "./MaterialCalculator";
 
 interface Props {
   productName: string;
@@ -15,6 +16,24 @@ interface Props {
   listPrice?: number;
 }
 
+/**
+ * PDP quote section — qty stepper, estimated subtotal, single "Request
+ * a Quote" CTA.
+ *
+ * Pricing IS shown here on the PDP (subtotal + strikethrough list
+ * subtotal when on sale). Listing cards stay $-free; that's a
+ * collections-page constraint, not a site-wide one. Stock counts are
+ * still hidden everywhere — the StockPill at the top of the column
+ * shows in/out-of-stock state without a numeric on-hand count.
+ *
+ * Listens for `saro:calculator-result` events fired by the
+ * MaterialCalculator further down the page; on receive the qty stepper
+ * auto-fills with the computed piece count and the subtotal updates in
+ * lockstep.
+ *
+ * NOTE: This is a fallback. A GoHighLevel-embedded form will replace
+ * `/contact` later; the shared quote helper keeps both paths in sync.
+ */
 export default function ProductCTAs({
   productName,
   variantCode,
@@ -24,89 +43,101 @@ export default function ProductCTAs({
   listPrice,
 }: Props) {
   // Stored as a string so the input can hold transient states like "" while
-  // the user is clearing the field to retype. Numeric quantity is derived
-  // below — that way React never forces a "1" back into the input mid-edit
-  // and the user can paste/type 3000 freely.
+  // the user is clearing the field to retype.
   const [qtyText, setQtyText] = useState("1");
   const parsed = parseInt(qtyText, 10);
   const quantity = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 
+  // Calculator-derived context that travels into the quote URL when set.
+  // Cleared if the user manually edits the qty stepper afterwards — the
+  // boxes/sqft would no longer correspond to the qty at that point.
+  const [calcContext, setCalcContext] = useState<{
+    boxes?: number;
+    totalSqft?: number;
+  }>({});
+
+  // Subscribe to calculator results and mirror the piece count onto the
+  // stepper. Dispatch happens whenever the user has typed a non-zero area
+  // into the calculator below.
+  useEffect(() => {
+    const onCalc = (e: Event) => {
+      const detail = (e as CustomEvent<CalculatorResultEvent>).detail;
+      if (!detail || detail.pieces <= 0) return;
+      setQtyText(String(detail.pieces));
+      setCalcContext({
+        boxes: detail.boxes > 0 ? detail.boxes : undefined,
+        totalSqft: detail.totalSqft > 0 ? detail.totalSqft : undefined,
+      });
+    };
+    window.addEventListener("saro:calculator-result", onCalc);
+    return () => window.removeEventListener("saro:calculator-result", onCalc);
+  }, []);
+
   const available = inventory?.available ?? 0;
   const allowOutOfStock = inventory?.allowOutOfStock ?? false;
   const hasInventoryData = !!inventory;
-
-  // Buy Now is enabled only when the requested quantity can actually ship.
-  // No inventory data → fall back to quote-only (don't block the user with a
-  // disabled button just because HL hasn't been wired to this variant yet).
-  const canBuyNow = hasInventoryData && quantity > 0 && quantity <= available;
 
   const subtotal = typeof price === "number" ? price * quantity : undefined;
   const listSubtotal =
     typeof listPrice === "number" ? listPrice * quantity : undefined;
   const off = discountPercent(price, listPrice);
 
-  const quoteHref =
-    "/contact" +
-    `?product=${encodeURIComponent(productName)}` +
-    `&variant=${encodeURIComponent(variantCode)}` +
-    `&qty=${quantity}`;
+  const quoteHref = buildQuoteUrl({
+    productName,
+    variantCode,
+    sku,
+    quantity,
+    boxes: calcContext.boxes,
+    totalSqft: calcContext.totalSqft,
+    price,
+    listPrice,
+  });
 
-  const buyHref =
-    "/checkout" +
-    `?sku=${encodeURIComponent(sku)}` +
-    `&qty=${quantity}`;
-
+  // Cap the stepper at on-hand quantity when we know it AND out-of-stock
+  // purchases aren't enabled. Without inventory data we don't cap (HL
+  // hasn't been wired to this variant yet).
   const cap = (n: number) => {
     if (!hasInventoryData || allowOutOfStock) return Math.max(1, n);
     return Math.min(available > 0 ? available : 1, Math.max(1, n));
   };
 
-  const decrement = () => setQtyText(String(Math.max(1, quantity - 1)));
-  const increment = () => setQtyText(String(cap(quantity + 1)));
+  const decrement = () => {
+    setQtyText(String(Math.max(1, quantity - 1)));
+    // Manual edit invalidates the calc context — the boxes/sqft were tied
+    // to the previous qty. Drop them so the quote body reflects only what
+    // the user is actually looking at now.
+    setCalcContext({});
+  };
+  const increment = () => {
+    setQtyText(String(cap(quantity + 1)));
+    setCalcContext({});
+  };
 
   const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    // Allow only digits OR empty (so the user can clear to retype). Anything
-    // else is rejected without snapping the value back, so the cursor stays
-    // where the user expects.
     if (raw === "" || /^\d+$/.test(raw)) {
       setQtyText(raw);
+      setCalcContext({});
     }
   };
 
   const handleQtyBlur = () => {
-    // On blur, snap empty/zero back to a valid quantity so subsequent button
-    // clicks and quote/buy URLs always carry a sane value.
     const n = parseInt(qtyText, 10);
     const next = Number.isFinite(n) && n > 0 ? n : 1;
     setQtyText(String(next));
   };
 
-  // Helper text under the buttons gives the shopper context for why Buy Now
-  // greys out when it does.
-  const helper = (() => {
-    if (!hasInventoryData) return null;
-    if (available <= 0 && !allowOutOfStock) {
-      return "Out of stock — request a quote and we'll source it for you.";
-    }
-    if (quantity > available && !allowOutOfStock) {
-      return `Only ${available} available right now. Lower the quantity to buy now, or request a quote for the full amount.`;
-    }
-    if (available > 0) {
-      return `${available} available · ships from nearest warehouse.`;
-    }
-    return null;
-  })();
+  // Helper text only when the variant is fully out of stock — and even
+  // then it doesn't reveal the on-hand count.
+  const helper =
+    hasInventoryData && available <= 0 && !allowOutOfStock
+      ? "Currently out of stock — request a quote and we'll source it for you."
+      : null;
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      {/* Unit price headline — anchors the Buy Now action with a clear $ */}
-      {typeof price === "number" && (
-        <PriceBlock price={price} listPrice={listPrice} size="lg" />
-      )}
-
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        {/* Stepper — 44px tap targets, big +/- glyphs for thumbs */}
+        {/* Stepper — 44px tap targets for thumbs */}
         <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button
             type="button"
@@ -137,11 +168,12 @@ export default function ProductCTAs({
           </button>
         </div>
 
-        {/* Inline subtotal next to the stepper */}
+        {/* Estimated subtotal next to the stepper — price × qty, with
+            strikethrough list subtotal when there's an active discount. */}
         {typeof subtotal === "number" && (
           <div className="flex flex-col">
             <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
-              Subtotal
+              Estimated subtotal
             </span>
             <div className="flex flex-wrap items-baseline gap-2">
               <span className="text-[18px] font-semibold text-saro-dark">
@@ -155,37 +187,43 @@ export default function ProductCTAs({
             </div>
           </div>
         )}
-      </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Link
-          href={quoteHref}
-          className="inline-flex flex-1 items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light"
-        >
-          Get a Quote
-        </Link>
-        {canBuyNow ? (
-          <Link
-            href={buyHref}
-            className="inline-flex flex-1 items-center justify-center rounded border border-saro-dark bg-saro-dark px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-black"
-          >
-            Buy Now
-          </Link>
-        ) : (
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            className="inline-flex flex-1 cursor-not-allowed items-center justify-center rounded border border-gray-300 bg-gray-200 px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-gray-500"
-          >
-            Buy Now
-          </button>
+        {/* Calculator-derived project context — surfaces the project area
+            and box count next to the stepper so the user knows their
+            calculation is feeding the quote. */}
+        {(calcContext.boxes !== undefined ||
+          calcContext.totalSqft !== undefined) && (
+          <div className="flex flex-col">
+            <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
+              From your calculation
+            </span>
+            <span className="text-[13px] text-saro-dark">
+              {calcContext.totalSqft !== undefined &&
+                `${calcContext.totalSqft} ft²`}
+              {calcContext.totalSqft !== undefined &&
+              calcContext.boxes !== undefined
+                ? " · "
+                : ""}
+              {calcContext.boxes !== undefined &&
+                `${calcContext.boxes} box${calcContext.boxes === 1 ? "" : "es"}`}
+            </span>
+          </div>
         )}
       </div>
 
-      {helper && (
-        <p className="text-[12px] text-gray-500">{helper}</p>
-      )}
+      <Link
+        href={quoteHref}
+        className="inline-flex items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto sm:self-start"
+      >
+        Request a Quote
+      </Link>
+
+      {helper && <p className="text-[12px] text-gray-500">{helper}</p>}
+
+      <p className="text-[11px] italic text-gray-500">
+        Estimated total. Final pricing, freight, and lead time confirmed in
+        your quote.
+      </p>
     </div>
   );
 }

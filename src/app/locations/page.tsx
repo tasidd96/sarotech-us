@@ -44,15 +44,12 @@ export default function LocationsPage() {
             <div>
               <h2 className="mb-4 text-2xl font-semibold">Visit the Houston HQ</h2>
               <p className="mb-2 text-gray-700">
-                <strong>Warehouse:</strong> 1210 Leer Street, Houston, TX
-              </p>
-              <p className="mb-2 text-gray-700">
-                <strong>Office:</strong> 7676 Hilmont Street, Houston, TX
+                1210 Lear Street, Houston, TX 77015
               </p>
               <p className="mb-2 text-gray-700">
                 <strong>Phone:</strong>{" "}
-                <a href="tel:+18325551234" className="text-saro-green hover:underline">
-                  (832) 555-1234
+                <a href="tel:+18324476566" className="text-saro-green hover:underline">
+                  (832) 447-6566
                 </a>
               </p>
               <p className="text-gray-700">
