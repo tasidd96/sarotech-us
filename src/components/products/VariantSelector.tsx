@@ -140,16 +140,29 @@ export default function VariantSelector({
     return result;
   }, [siblings]);
 
-  // De-duped sibling list for the swatches grid (one card per unique slug).
+  // Swatches grid varies along the *primary* (first) axis. All other
+  // axes are locked to the user's current selection so the grid only
+  // shows alternatives that actually exist in the catalog for that
+  // combination — e.g. with Size=Extended picked, the grid only shows
+  // colors that come in Extended. For single-axis products the lock set
+  // is empty, so all siblings appear (unchanged from before).
   const swatches = useMemo(() => {
+    const lockedAxes = axes.slice(1);
     const seen = new Set<string>();
     return siblings.filter((s) => {
+      if (lockedAxes.length > 0) {
+        if (!s.selectedOptions) return false;
+        const allMatch = lockedAxes.every(
+          (axis) => s.selectedOptions?.[axis.name] === selected[axis.name]
+        );
+        if (!allMatch) return false;
+      }
       const slug = variantSlug(s);
       if (seen.has(slug)) return false;
       seen.add(slug);
       return true;
     });
-  }, [siblings]);
+  }, [axes, siblings, selected]);
 
   if (axes.length === 0) return null;
 

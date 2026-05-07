@@ -104,7 +104,9 @@ const HL_PRODUCT_MAP: Record<string, HLProductMapping> = {
     defaultImage: "/images/categories/coextruded-cladding.png",
   },
   "Synthetic Marble": {
-    category: "exterior",
+    // Marble sheet is an interior finish — restoring after a brief stint
+    // under exterior. Lives under the Interior tab on the listing page.
+    category: "interior",
     productType: "synthetic-marble",
     defaultImage: "/images/categories/continuous-synthetic-marble.png",
   },

@@ -38,12 +38,12 @@ export default function ProductsSubNav({ typesByCategory }: Props) {
     closeTimer.current = setTimeout(() => setOpenKey(null), 120);
   };
 
-  const visibleMenuItems = ALL_MENU_ITEMS.filter(
-    (item) => (typesByCategory[item.key]?.length ?? 0) > 0
-  );
-
-  // No populated categories at all — hide the entire sub-nav.
-  if (visibleMenuItems.length === 0) return null;
+  // Always show every category tab (Interior, Exterior, Accessories) even
+  // when a category currently has zero matching products. Dynamic hiding
+  // confused users — the brand sells across all three, and an empty tab
+  // is fine UX (the listing just shows zero results). Type-level dropdown
+  // entries below stay dynamic so we don't link to dead filters.
+  const visibleMenuItems = ALL_MENU_ITEMS;
 
   return (
     <div
