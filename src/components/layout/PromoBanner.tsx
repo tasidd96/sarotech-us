@@ -10,7 +10,7 @@ export default function PromoBanner() {
     >
       <div className="promo-banner-content">
         <span className="promo-banner-text">
-          Request a Quote — Get 30% off this month &nbsp;→
+          30% off this month &nbsp;→
         </span>
       </div>
     </Link>
