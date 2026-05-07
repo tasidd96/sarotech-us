@@ -186,15 +186,17 @@ export default function VariantAxisDropdowns({
   if (axes.length === 0) return null;
 
   const handleChange = (axisName: string, optionName: string) => {
-    // "All <AxisName>" sentinel OR re-clicking the currently selected
-    // option (deselect) → flip the override flag on, no nav. The
-    // VariantSwatches grid (subscribed via context) will stop filtering
-    // siblings on this axis and surface every variant.
-    if (
-      optionName === ALL_OVERRIDE ||
-      selected[axisName] === optionName
-    ) {
+    // Explicit "All <AxisName>" sentinel always enables the override.
+    if (optionName === ALL_OVERRIDE) {
       setOverride(axisName, true);
+      return;
+    }
+    // Re-clicking the currently-selected option TOGGLES the override —
+    // first click deselects to "All <Axis>" (swatches expand), second
+    // click re-locks back to the current variant. No nav either way
+    // since we're already on that variant.
+    if (selected[axisName] === optionName) {
+      setOverride(axisName, !overrides[axisName]);
       return;
     }
     // Picking a different real option clears any prior "all" override
