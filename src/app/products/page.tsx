@@ -22,8 +22,17 @@ export default async function ProductsPage({
       ? [rawType as ProductType]
       : [];
 
+  // Key includes URL search params so a client-side nav that changes
+  // the params (sub-nav dropdown click, sidebar checkbox, etc.) remounts
+  // ProductsPageClient. Without this, useState(initialTab/initialTypes)
+  // is only consumed on first mount — subsequent prop changes from the
+  // server re-render are ignored, and the listing wouldn't update until
+  // a hard refresh. (This is the recurring "stuck hyperlink" bug.)
+  const stateKey = `${initialTab ?? "all"}|${initialTypes.join(",")}|${initialQ}`;
+
   return (
     <ProductsPageClient
+      key={stateKey}
       products={products}
       initialTab={initialTab}
       initialQ={initialQ}

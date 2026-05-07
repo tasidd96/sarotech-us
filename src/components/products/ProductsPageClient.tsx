@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Product, ProductCategory, ProductType } from "@/lib/types";
 import { productMatchesCategory } from "@/lib/category";
 import SidebarFilters from "@/components/products/SidebarFilters";
@@ -35,6 +35,35 @@ export default function ProductsPageClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersVisible, setFiltersVisible] = useState(true);
   const [inStockOnly, setInStockOnly] = useState(false);
+
+  // Mirror filter state into the URL via history.replaceState. URL is the
+  // source of truth: refreshing restores the same view, copy-pasting the
+  // URL reproduces it, and the sub-nav (which reads searchParams) can
+  // reflect the active category. We use replaceState (not router.replace)
+  // to avoid a Next.js navigation round-trip on every checkbox click —
+  // products are already loaded client-side, no need to re-fetch.
+  // A synthetic popstate event is dispatched after each replaceState so
+  // any URL-listening UI (e.g. ProductsSubNav) can re-read searchParams.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams();
+    if (activeCategory) params.set("tab", activeCategory);
+    for (const t of selectedTypes) params.append("type", t);
+    if (searchQuery) params.set("q", searchQuery);
+    const qs = params.toString();
+    const newUrl =
+      window.location.pathname +
+      (qs ? `?${qs}` : "") +
+      window.location.hash;
+    const currentUrl =
+      window.location.pathname +
+      window.location.search +
+      window.location.hash;
+    if (newUrl !== currentUrl) {
+      window.history.replaceState(null, "", newUrl);
+      window.dispatchEvent(new Event("popstate"));
+    }
+  }, [activeCategory, selectedTypes, searchQuery]);
 
   // Clicking the active category deselects it (toggle to null).
   const handleCategoryChange = (cat: ProductCategory | null) => {
