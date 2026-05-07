@@ -188,15 +188,19 @@ export default function VariantAxisDropdowns({
   if (axes.length === 0) return null;
 
   const handleChange = (axisName: string, optionName: string) => {
-    // "All <AxisName>" sentinel: flip the override flag, no nav. The
+    // "All <AxisName>" sentinel OR re-clicking the currently selected
+    // option (deselect) → flip the override flag on, no nav. The
     // VariantSwatches grid (subscribed via context) will stop filtering
     // siblings on this axis and surface every variant.
-    if (optionName === ALL_OVERRIDE) {
+    if (
+      optionName === ALL_OVERRIDE ||
+      selected[axisName] === optionName
+    ) {
       setOverride(axisName, true);
       return;
     }
-    // Picking a real option clears any prior "all" override on this
-    // axis — user has narrowed the selection again.
+    // Picking a different real option clears any prior "all" override
+    // on this axis — user has narrowed the selection again.
     setOverride(axisName, false);
     const newCombo = { ...selected, [axisName]: optionName };
     const exact = siblings.find((s) => {
