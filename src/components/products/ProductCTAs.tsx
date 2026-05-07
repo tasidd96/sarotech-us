@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Inventory } from "@/lib/types";
+import { discountPercent, formatUSD } from "@/lib/price";
 import { buildQuoteUrl } from "@/lib/quote";
 import type { CalculatorResultEvent } from "./MaterialCalculator";
 
@@ -16,20 +17,19 @@ interface Props {
 }
 
 /**
- * PDP quote section — qty stepper + single "Request a Quote" CTA.
+ * PDP quote section — qty stepper, estimated subtotal, single "Request
+ * a Quote" CTA.
  *
- * Pricing dollar figures are deliberately NOT rendered here. Public
- * traffic only sees the qty stepper and the calculator-derived project
- * context; actual prices, list prices, and stock counts will surface
- * later behind a rewards-program login. The price + listPrice props
- * still flow through to `buildQuoteUrl` so the contact form receives
- * the full context (sales reps need it for quoting).
+ * Pricing IS shown here on the PDP (subtotal + strikethrough list
+ * subtotal when on sale). Listing cards stay $-free; that's a
+ * collections-page constraint, not a site-wide one. Stock counts are
+ * still hidden everywhere — the StockPill at the top of the column
+ * shows in/out-of-stock state without a numeric on-hand count.
  *
  * Listens for `saro:calculator-result` events fired by the
  * MaterialCalculator further down the page; on receive the qty stepper
- * auto-fills with the computed piece count and the resulting quote URL
- * carries boxes/sqft/qty/price/listPrice plus a pre-formatted message
- * body for the contact form's textarea.
+ * auto-fills with the computed piece count and the subtotal updates in
+ * lockstep.
  *
  * NOTE: This is a fallback. A GoHighLevel-embedded form will replace
  * `/contact` later; the shared quote helper keeps both paths in sync.
@@ -76,6 +76,11 @@ export default function ProductCTAs({
   const available = inventory?.available ?? 0;
   const allowOutOfStock = inventory?.allowOutOfStock ?? false;
   const hasInventoryData = !!inventory;
+
+  const subtotal = typeof price === "number" ? price * quantity : undefined;
+  const listSubtotal =
+    typeof listPrice === "number" ? listPrice * quantity : undefined;
+  const off = discountPercent(price, listPrice);
 
   const quoteHref = buildQuoteUrl({
     productName,
@@ -163,9 +168,29 @@ export default function ProductCTAs({
           </button>
         </div>
 
+        {/* Estimated subtotal next to the stepper — price × qty, with
+            strikethrough list subtotal when there's an active discount. */}
+        {typeof subtotal === "number" && (
+          <div className="flex flex-col">
+            <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
+              Estimated subtotal
+            </span>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-[18px] font-semibold text-saro-dark">
+                {formatUSD(subtotal)}
+              </span>
+              {typeof listSubtotal === "number" && off !== undefined && (
+                <span className="text-[12px] text-gray-500 line-through">
+                  {formatUSD(listSubtotal)}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Calculator-derived project context — surfaces the project area
             and box count next to the stepper so the user knows their
-            calculation is feeding the quote. No dollar figures shown. */}
+            calculation is feeding the quote. */}
         {(calcContext.boxes !== undefined ||
           calcContext.totalSqft !== undefined) && (
           <div className="flex flex-col">
@@ -194,6 +219,11 @@ export default function ProductCTAs({
       </Link>
 
       {helper && <p className="text-[12px] text-gray-500">{helper}</p>}
+
+      <p className="text-[11px] italic text-gray-500">
+        Estimated total. Final pricing, freight, and lead time confirmed in
+        your quote.
+      </p>
     </div>
   );
 }
