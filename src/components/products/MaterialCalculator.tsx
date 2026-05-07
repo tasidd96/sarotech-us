@@ -132,9 +132,13 @@ export default function MaterialCalculator({
   // the PDP's CTA stepper (further up the page) can auto-fill its quantity
   // input and surface a subtotal that matches the project size. The
   // `overage` flag travels too so the CTA can label "(+10% overage)".
+  //
+  // We ALSO dispatch when the user clears the input (pieces/boxes/sqft
+  // back to 0) so subscribers can clear their cached calc context — the
+  // "From your calculation" panel disappears instead of holding stale
+  // numbers.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!hasInput || !canCalculate) return;
     const detail: CalculatorResultEvent = {
       pieces,
       boxes,
@@ -142,7 +146,7 @@ export default function MaterialCalculator({
       overage,
     };
     window.dispatchEvent(new CustomEvent("saro:calculator-result", { detail }));
-  }, [hasInput, canCalculate, pieces, boxes, totalSqft, overage]);
+  }, [pieces, boxes, totalSqft, overage]);
 
   const quoteHref = buildQuoteUrl({
     productName,

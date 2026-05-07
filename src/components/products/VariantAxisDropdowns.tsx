@@ -4,6 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product, VariantAxis } from "@/lib/types";
 import { variantSlug } from "@/lib/slug";
+import {
+  ALL_OVERRIDE,
+  useVariantSelection,
+} from "./VariantSelectionContext";
 
 type Props = {
   product: Product;
@@ -37,17 +41,21 @@ function Chevron() {
 }
 
 /** One axis dropdown — custom button + popup, designed to sit inline
- *  with body copy or a heading. */
+ *  with body copy or a heading. The first menu item is always
+ *  "All <AxisName>" so the user can clear the swatch-grid lock without
+ *  having to navigate to a specific variant first. */
 function AxisDropdown({
   axis,
   currentValue,
   available,
   onChange,
+  overrideOn,
 }: {
   axis: VariantAxis;
   currentValue: string;
   available: Set<string>;
   onChange: (value: string) => void;
+  overrideOn: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -65,7 +73,12 @@ function AxisDropdown({
 
   const visibleOptions = axis.options.filter((o) => available.has(o.name));
   const hasMultiple = visibleOptions.length > 1;
-  const display = currentValue || visibleOptions[0]?.name || "—";
+  const allLabel = `All ${axis.name}`;
+  // What the trigger button shows. When the override is on we surface
+  // "All <AxisName>" so the user knows the swatch grid is unlocked.
+  const display = overrideOn
+    ? allLabel
+    : currentValue || visibleOptions[0]?.name || "—";
 
   return (
     <div
@@ -98,18 +111,37 @@ function AxisDropdown({
         style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}
         role="listbox"
       >
+        {/* Special "All <AxisName>" pseudo-option: turns off the
+            swatch-grid lock for this axis so the user can browse every
+            variant regardless of what's selected. */}
+        <button
+          type="button"
+          role="option"
+          aria-selected={overrideOn}
+          onClick={() => {
+            onChange(ALL_OVERRIDE);
+            setOpen(false);
+          }}
+          className={`sort-dropdown-item block w-full border-b border-gray-100 px-4 py-2 text-left text-[14px] transition-colors hover:bg-gray-50 ${
+            overrideOn ? "text-saro-green" : "text-gray-700"
+          }`}
+        >
+          {allLabel}
+        </button>
         {visibleOptions.map((o) => (
           <button
             key={o.id}
             type="button"
             role="option"
-            aria-selected={currentValue === o.name}
+            aria-selected={!overrideOn && currentValue === o.name}
             onClick={() => {
               onChange(o.name);
               setOpen(false);
             }}
             className={`sort-dropdown-item block w-full px-4 py-2 text-left text-[14px] transition-colors hover:bg-gray-50 ${
-              currentValue === o.name ? "text-saro-green" : "text-gray-700"
+              !overrideOn && currentValue === o.name
+                ? "text-saro-green"
+                : "text-gray-700"
             }`}
           >
             {o.name}
@@ -134,6 +166,7 @@ export default function VariantAxisDropdowns({
   axisFilter = (axis) => !/^color$/i.test(axis.name),
 }: Props) {
   const router = useRouter();
+  const { overrides, setOverride } = useVariantSelection();
   const allAxes = product.variantAxes ?? [];
   const axes = allAxes.filter((axis, i) => axisFilter(axis, i));
   const selected = product.selectedOptions ?? {};
@@ -155,6 +188,16 @@ export default function VariantAxisDropdowns({
   if (axes.length === 0) return null;
 
   const handleChange = (axisName: string, optionName: string) => {
+    // "All <AxisName>" sentinel: flip the override flag, no nav. The
+    // VariantSwatches grid (subscribed via context) will stop filtering
+    // siblings on this axis and surface every variant.
+    if (optionName === ALL_OVERRIDE) {
+      setOverride(axisName, true);
+      return;
+    }
+    // Picking a real option clears any prior "all" override on this
+    // axis — user has narrowed the selection again.
+    setOverride(axisName, false);
     const newCombo = { ...selected, [axisName]: optionName };
     const exact = siblings.find((s) => {
       if (!s.selectedOptions) return false;
@@ -183,6 +226,7 @@ export default function VariantAxisDropdowns({
             currentValue={selected[axis.name] ?? ""}
             available={available}
             onChange={(value) => handleChange(axis.name, value)}
+            overrideOn={!!overrides[axis.name]}
           />
         );
       })}

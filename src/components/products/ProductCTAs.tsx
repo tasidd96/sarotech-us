@@ -63,7 +63,15 @@ export default function ProductCTAs({
   useEffect(() => {
     const onCalc = (e: Event) => {
       const detail = (e as CustomEvent<CalculatorResultEvent>).detail;
-      if (!detail || detail.pieces <= 0) return;
+      if (!detail) return;
+      // Reset case: user cleared the calculator input → drop cached
+      // context so the "From your calculation" line vanishes instead of
+      // showing stale numbers. Don't touch the qty stepper (the user
+      // may still want to manually pick a quantity).
+      if (detail.pieces <= 0) {
+        setCalcContext({});
+        return;
+      }
       setQtyText(String(detail.pieces));
       setCalcContext({
         boxes: detail.boxes > 0 ? detail.boxes : undefined,
@@ -145,7 +153,7 @@ export default function ProductCTAs({
           the 40% column at desktop widths; full-width button below
           reads cleaner regardless of viewport. */}
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-stretch gap-x-2 gap-y-2">
+        <div className="flex flex-wrap items-stretch gap-x-5 gap-y-2">
           {/* Stepper — 44px tap targets for thumbs */}
           <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button

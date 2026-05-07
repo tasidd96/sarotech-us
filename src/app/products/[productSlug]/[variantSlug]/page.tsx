@@ -12,6 +12,7 @@ import StockPill from "@/components/products/StockPill";
 import ToneSelector from "@/components/products/ToneSelector";
 import VariantAxisDropdowns from "@/components/products/VariantAxisDropdowns";
 import VariantSwatches from "@/components/products/VariantSwatches";
+import { VariantSelectionProvider } from "@/components/products/VariantSelectionContext";
 import { formatInches } from "@/lib/units";
 import { discountPercent } from "@/lib/price";
 
@@ -93,7 +94,7 @@ export default async function ProductVariantPage({
   const variantCode = variantLabel(variant);
 
   return (
-    <>
+    <VariantSelectionProvider>
       <div className="product-detail-page">
         <main className="product-detail-main container-std pt-6">
           {/* Breadcrumb */}
@@ -298,6 +299,6 @@ export default async function ProductVariantPage({
         {/* Section 4 — FAQ + install guide */}
         <ProductFAQSection productName={variant.name} />
       </div>
-    </>
+    </VariantSelectionProvider>
   );
 }

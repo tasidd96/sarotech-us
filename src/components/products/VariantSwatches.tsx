@@ -3,8 +3,9 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Product } from "@/lib/types";
+import { Product, VariantAxis } from "@/lib/types";
 import { variantSlug, variantLabel } from "@/lib/slug";
+import { useVariantSelection } from "./VariantSelectionContext";
 
 type Props = {
   product: Product;
@@ -13,25 +14,46 @@ type Props = {
 };
 
 /**
- * Swatch grid for direct visual variant selection — typically the
- * Color/finish axis. Shows every sibling regardless of which other-axis
- * dropdowns are currently picked, so a user on a 3-Ribs product can
- * still tap straight to a 4-Ribs swatch.
+ * Swatch grid for direct visual variant selection.
+ *
+ * By default the grid is LOCKED to the current variant's non-Color axis
+ * selections — i.e. only siblings that match the same Size/Rib/etc. are
+ * visible, so the user sees colors that come in their chosen size. The
+ * lock can be lifted per-axis via the "All <AxisName>" option in the
+ * VariantAxisDropdowns above (state lives in VariantSelectionContext).
+ *
+ * Color axis (the first axis) is never locked — that's what the swatch
+ * grid varies along.
  */
 export default function VariantSwatches({
   product,
   siblings,
   productSlug,
 }: Props) {
+  const { overrides } = useVariantSelection();
+
   const swatches = useMemo(() => {
+    const axes: VariantAxis[] = product.variantAxes ?? [];
+    const selected = product.selectedOptions ?? {};
+    // Lock all non-primary axes (Color is index 0) unless the user has
+    // explicitly picked "All <AxisName>" for that axis.
+    const lockedAxes = axes.slice(1).filter((axis) => !overrides[axis.name]);
+
     const seen = new Set<string>();
     return siblings.filter((s) => {
+      if (lockedAxes.length > 0) {
+        if (!s.selectedOptions) return false;
+        const allMatch = lockedAxes.every(
+          (axis) => s.selectedOptions?.[axis.name] === selected[axis.name]
+        );
+        if (!allMatch) return false;
+      }
       const slug = variantSlug(s);
       if (seen.has(slug)) return false;
       seen.add(slug);
       return true;
     });
-  }, [siblings]);
+  }, [product.variantAxes, product.selectedOptions, siblings, overrides]);
 
   if (swatches.length === 0) return null;
 

@@ -198,15 +198,16 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile call button — right column, hidden on desktop */}
+        {/* Mobile call button — right column, hidden on desktop. Note:
+            display lives on the className (`flex md:hidden`) so the
+            md-breakpoint hide rule actually wins. Earlier this had an
+            inline `display: flex` which clobbered `md:hidden` and made
+            the icon show on desktop too. */}
         <a
           href="tel:+18324476566"
           aria-label="Call SARO TECH"
-          className="md:hidden"
+          className="flex items-center justify-center md:hidden"
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             width: 44,
             height: 44,
             borderRadius: "50%",
