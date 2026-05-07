@@ -33,7 +33,8 @@ export default function VariantSwatches({
   siblings,
   productSlug,
 }: Props) {
-  const { overrides } = useVariantSelection();
+  const { overrides, setOverride } = useVariantSelection();
+  const controlled = pickControlledAxis(product.variantAxes);
 
   const swatches = useMemo(() => {
     const selected = product.selectedOptions ?? {};
@@ -42,9 +43,8 @@ export default function VariantSwatches({
     // for Color-only products like Cladding). Override on that axis
     // unlocks the grid. Other axes (if any) are ignored — they don't
     // have a dropdown, so the user can't navigate between them anyway.
-    const controlled = pickControlledAxis(product.variantAxes);
-    const lockedAxes =
-      controlled && !overrides[controlled.name] ? [controlled] : [];
+    const overrideOn = !!(controlled && overrides[controlled.name]);
+    const lockedAxes = controlled && !overrideOn ? [controlled] : [];
 
     const seen = new Set<string>();
     return siblings.filter((s) => {
@@ -61,12 +61,22 @@ export default function VariantSwatches({
         });
         if (!allMatch) return false;
       }
+      // Dedup key: when the grid is unlocked, include the controlled
+      // axis value so duplicates with the same name but different
+      // axis values (e.g. A50-Antique Brushed in 3-Ribs vs 4-Ribs) each
+      // get their own swatch. When locked, every swatch already shares
+      // the same axis value, so slug-only is enough.
       const slug = variantSlug(s);
-      if (seen.has(slug)) return false;
-      seen.add(slug);
+      const axisVal =
+        overrideOn && controlled
+          ? s.selectedOptions?.[controlled.name] ?? ""
+          : "";
+      const key = axisVal ? `${slug}|${axisVal}` : slug;
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     });
-  }, [product.variantAxes, product.selectedOptions, siblings, overrides]);
+  }, [controlled, product.selectedOptions, siblings, overrides]);
 
   if (swatches.length === 0) return null;
 
@@ -79,16 +89,29 @@ export default function VariantSwatches({
         {swatches.map((s) => {
           const isActive = s.id === product.id;
           const sSlug = variantSlug(s);
-          return (
-            <Link
-              key={s.id}
-              href={`/products/${productSlug}/${sSlug}`}
-              aria-label={variantLabel(s)}
-              aria-current={isActive ? "true" : undefined}
-              className={`group relative flex flex-col items-center gap-1.5 ${
-                isActive ? "" : "hover:scale-[1.02]"
-              } transition-transform`}
-            >
+          // Pin the controlled-axis value into the URL when the grid is
+          // showing all variants; otherwise siblings sharing a slug
+          // (e.g. A50-Antique Brushed in 3-Ribs vs 4-Ribs) would all
+          // route to the same URL and `findVariantWithParams` would
+          // fall back to the first match.
+          const overrideOn = !!(controlled && overrides[controlled.name]);
+          const sAxisVal = controlled
+            ? s.selectedOptions?.[controlled.name]
+            : undefined;
+          const href =
+            overrideOn && controlled && sAxisVal
+              ? `/products/${productSlug}/${sSlug}?${new URLSearchParams({
+                  [controlled.name]: sAxisVal,
+                }).toString()}`
+              : `/products/${productSlug}/${sSlug}`;
+          // Suffix the label with the axis value when the grid is
+          // unlocked so the user can tell duplicates apart.
+          const label =
+            overrideOn && sAxisVal
+              ? `${s.variantName} · ${sAxisVal}`
+              : s.variantName;
+          const inner = (
+            <>
               <span
                 className={`relative block aspect-square w-full overflow-hidden rounded-md border-2 transition-colors ${
                   isActive
@@ -105,8 +128,45 @@ export default function VariantSwatches({
                 />
               </span>
               <span className="block w-full truncate text-center text-[11px] leading-tight text-gray-600">
-                {s.variantName}
+                {label}
               </span>
+            </>
+          );
+          const cls = `group relative flex flex-col items-center gap-1.5 ${
+            isActive ? "" : "hover:scale-[1.02]"
+          } transition-transform`;
+          // Re-clicking the active swatch flips on the "All <Axis>"
+          // override so the grid expands to every variant — same pattern
+          // as re-clicking the active dropdown option. No-op when the
+          // product has no controlled axis (single-variant items).
+          if (isActive) {
+            return (
+              <button
+                key={s.id}
+                type="button"
+                aria-label={`Show all ${controlled?.name ?? "variants"}`}
+                aria-current="true"
+                onClick={() => {
+                  if (controlled) setOverride(controlled.name, true);
+                }}
+                className={`${cls} text-left`}
+              >
+                {inner}
+              </button>
+            );
+          }
+          return (
+            <Link
+              key={`${s.id}|${sAxisVal ?? ""}`}
+              href={href}
+              aria-label={
+                overrideOn && sAxisVal
+                  ? `${variantLabel(s)}, ${sAxisVal}`
+                  : variantLabel(s)
+              }
+              className={cls}
+            >
+              {inner}
             </Link>
           );
         })}

@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { ProductDimensions } from "@/lib/types";
 import { buildQuoteUrl } from "@/lib/quote";
 
+/**
+ * Detail dispatched on `saro:quantity-change` by the PDP qty stepper.
+ * The calculator listens and back-fills its sqft input + piece override
+ * so the result columns mirror the chosen quantity.
+ */
+export interface QuantityChangeEvent {
+  pieces: number;
+}
+
 type Props = {
   dimensions?: ProductDimensions;
   piecesPerBox?: number;
@@ -54,6 +63,11 @@ export default function MaterialCalculator({
   // cover cuts and replacements; pre-checking it makes the math safer
   // by default and the toggle still lets the user opt out.
   const [overage, setOverage] = useState(true);
+  // Pinned piece count when the PDP qty stepper drives the calc backwards.
+  // Bypasses the ceil(sqft / sqftPerPiece) path so floating-point noise
+  // can't bump an even N up to N+1. Cleared as soon as the user touches
+  // any calc input directly.
+  const [pieceOverride, setPieceOverride] = useState<number | null>(null);
 
   // Derive per-piece coverage from product dimensions when available.
   // sqftPerBox (canonical marketing number) wins for box math; if it's
@@ -70,6 +84,31 @@ export default function MaterialCalculator({
   const canCalculate = !!sqftPerPiece || !!effectiveSqftPerBox;
 
   const { totalSqft, pieces, boxes, coveredSqft, hasInput } = useMemo(() => {
+    // Override path: PDP qty stepper picked an exact piece count. Use
+    // it directly so we never round drift away from what the user
+    // chose. Boxes still align to box minimums.
+    if (pieceOverride !== null && pieceOverride > 0 && sqftPerPiece) {
+      const piecesUsed = pieceOverride;
+      const exactTotal = piecesUsed * sqftPerPiece;
+      const perBox = piecesPerBox && piecesPerBox > 0 ? piecesPerBox : 0;
+      const boxCount =
+        perBox > 0
+          ? Math.ceil(piecesUsed / perBox)
+          : effectiveSqftPerBox
+          ? Math.ceil(exactTotal / effectiveSqftPerBox)
+          : 0;
+      const finalPieces = perBox > 0 ? boxCount * perBox : piecesUsed;
+      const covered = effectiveSqftPerBox
+        ? boxCount * effectiveSqftPerBox
+        : finalPieces * sqftPerPiece;
+      return {
+        totalSqft: exactTotal,
+        pieces: finalPieces,
+        boxes: boxCount,
+        coveredSqft: covered,
+        hasInput: true,
+      };
+    }
     let total = 0;
     if (mode === "sqft") {
       total = parseFloat(sqft) || 0;
@@ -123,6 +162,7 @@ export default function MaterialCalculator({
     effectiveSqftPerBox,
     sqftPerPiece,
     piecesPerBox,
+    pieceOverride,
   ]);
 
   const fmt = (n: number) =>
@@ -147,6 +187,26 @@ export default function MaterialCalculator({
     };
     window.dispatchEvent(new CustomEvent("saro:calculator-result", { detail }));
   }, [pieces, boxes, totalSqft, overage]);
+
+  // Reverse direction: PDP qty stepper → calculator. When the user
+  // changes quantity above, mirror it down here so the result columns
+  // stay in lockstep. Switches to ft² mode, fills the input with the
+  // implied area, drops overage (the user picked an exact qty), and
+  // pins the piece count via the override so ceil drift can't bump it.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onQty = (e: Event) => {
+      const detail = (e as CustomEvent<QuantityChangeEvent>).detail;
+      if (!detail || detail.pieces <= 0) return;
+      if (!sqftPerPiece) return;
+      setMode("sqft");
+      setSqft((detail.pieces * sqftPerPiece).toFixed(2));
+      setOverage(false);
+      setPieceOverride(detail.pieces);
+    };
+    window.addEventListener("saro:quantity-change", onQty);
+    return () => window.removeEventListener("saro:quantity-change", onQty);
+  }, [sqftPerPiece]);
 
   const quoteHref = buildQuoteUrl({
     productName,
@@ -195,14 +255,17 @@ export default function MaterialCalculator({
         {canCalculate ? (
           <div className="calculator-content-row grid grid-cols-1 items-center gap-[30px] lg:grid-cols-[minmax(0,462px)_repeat(4,minmax(0,1fr))]">
             {/* Input column */}
-            <div className="calculator-input-column flex flex-col gap-5">
-              <div className="calculation-options flex flex-wrap gap-6">
+            <div className="calculator-input-column flex flex-col items-center gap-5 lg:items-stretch">
+              <div className="calculation-options flex flex-wrap justify-center gap-6 lg:justify-start">
                 <label className="radio-option flex cursor-pointer items-center gap-2 text-[14px] text-saro-dark">
                   <input
                     type="radio"
                     value="sqft"
                     checked={mode === "sqft"}
-                    onChange={() => setMode("sqft")}
+                    onChange={() => {
+                      setMode("sqft");
+                      setPieceOverride(null);
+                    }}
                     name="calculationType"
                     className="accent-saro-green"
                   />
@@ -213,7 +276,10 @@ export default function MaterialCalculator({
                     type="radio"
                     value="dimensions"
                     checked={mode === "dimensions"}
-                    onChange={() => setMode("dimensions")}
+                    onChange={() => {
+                      setMode("dimensions");
+                      setPieceOverride(null);
+                    }}
                     name="calculationType"
                     className="accent-saro-green"
                   />
@@ -230,7 +296,10 @@ export default function MaterialCalculator({
                     step="0.1"
                     placeholder="150"
                     value={sqft}
-                    onChange={(e) => setSqft(e.target.value)}
+                    onChange={(e) => {
+                      setSqft(e.target.value);
+                      setPieceOverride(null);
+                    }}
                     className="area-input h-[45px] w-full flex-1 rounded border border-[#ccc] bg-white px-3 text-[16px] text-black outline-none focus:border-saro-green sm:w-[184px] sm:flex-none"
                   />
                   <span className="unit-label text-[16px] text-saro-dark">
@@ -246,7 +315,10 @@ export default function MaterialCalculator({
                     step="0.1"
                     placeholder="Width"
                     value={widthFt}
-                    onChange={(e) => setWidthFt(e.target.value)}
+                    onChange={(e) => {
+                      setWidthFt(e.target.value);
+                      setPieceOverride(null);
+                    }}
                     className="area-input h-[45px] w-full flex-1 rounded border border-[#ccc] bg-white px-3 text-[16px] text-black outline-none focus:border-saro-green sm:w-[120px] sm:flex-none"
                   />
                   <span className="text-[16px] text-saro-dark">×</span>
@@ -257,7 +329,10 @@ export default function MaterialCalculator({
                     step="0.1"
                     placeholder="Height"
                     value={heightFt}
-                    onChange={(e) => setHeightFt(e.target.value)}
+                    onChange={(e) => {
+                      setHeightFt(e.target.value);
+                      setPieceOverride(null);
+                    }}
                     className="area-input h-[45px] w-full flex-1 rounded border border-[#ccc] bg-white px-3 text-[16px] text-black outline-none focus:border-saro-green sm:w-[120px] sm:flex-none"
                   />
                   <span className="unit-label text-[16px] text-saro-dark">
@@ -302,7 +377,10 @@ export default function MaterialCalculator({
             type="button"
             role="switch"
             aria-checked={overage}
-            onClick={() => setOverage((v) => !v)}
+            onClick={() => {
+              setOverage((v) => !v);
+              setPieceOverride(null);
+            }}
             className={`overage-toggle inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2 text-[13px] font-medium transition-colors lg:w-auto lg:justify-start ${
               overage
                 ? "border-saro-green bg-saro-green text-white hover:bg-saro-green-light"

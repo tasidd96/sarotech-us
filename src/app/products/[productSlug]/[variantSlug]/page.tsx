@@ -3,7 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCatalog } from "@/lib/catalog";
-import { findVariant, findProductVariants, variantLabel } from "@/lib/slug";
+import {
+  findVariantWithParams,
+  findProductVariants,
+  variantLabel,
+} from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
 import ProductFAQSection from "@/components/products/ProductFAQSection";
@@ -20,12 +24,24 @@ type PageParams = { productSlug: string; variantSlug: string };
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<PageParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { productSlug, variantSlug: vSlug } = await params;
+  const sp = await searchParams;
+  const axisFilters: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    if (typeof v === "string") axisFilters[k] = v;
+  }
   const catalog = await getCatalog();
-  const variant = findVariant(productSlug, vSlug, catalog);
+  const variant = findVariantWithParams(
+    productSlug,
+    vSlug,
+    axisFilters,
+    catalog
+  );
   if (!variant) return { title: "Product not found | SARO TECH USA" };
 
   const label = variantLabel(variant);
@@ -69,12 +85,26 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 export default async function ProductVariantPage({
   params,
+  searchParams,
 }: {
   params: Promise<PageParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { productSlug, variantSlug: vSlug } = await params;
+  const sp = await searchParams;
+  // Flatten search params to a plain string map. Variant axes are
+  // single-valued (Ribs=4-Ribs, Size=Regular, …); ignore arrays.
+  const axisFilters: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    if (typeof v === "string") axisFilters[k] = v;
+  }
   const catalog = await getCatalog();
-  const variant = findVariant(productSlug, vSlug, catalog);
+  const variant = findVariantWithParams(
+    productSlug,
+    vSlug,
+    axisFilters,
+    catalog
+  );
   if (!variant) notFound();
 
   const siblings = findProductVariants(productSlug, catalog);

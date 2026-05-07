@@ -7,6 +7,17 @@ import { discountPercent, formatUSD } from "@/lib/price";
 import { buildQuoteUrl } from "@/lib/quote";
 import type { CalculatorResultEvent } from "./MaterialCalculator";
 
+/**
+ * Fire `saro:quantity-change` so the MaterialCalculator below can mirror
+ * the chosen piece count back into its inputs and result columns.
+ */
+const dispatchQty = (pieces: number) => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent("saro:quantity-change", { detail: { pieces } }),
+  );
+};
+
 interface Props {
   productName: string;
   variantCode: string;
@@ -113,15 +124,20 @@ export default function ProductCTAs({
   };
 
   const decrement = () => {
-    setQtyText(String(Math.max(1, quantity - 1)));
+    const next = Math.max(1, quantity - 1);
+    setQtyText(String(next));
     // Manual edit invalidates the calc context — the boxes/sqft were tied
-    // to the previous qty. Drop them so the quote body reflects only what
-    // the user is actually looking at now.
+    // to the previous qty. Drop them; the calculator below will repopulate
+    // via `saro:calculator-result` after it reverse-derives ft² from the
+    // new piece count.
     setCalcContext({});
+    dispatchQty(next);
   };
   const increment = () => {
-    setQtyText(String(cap(quantity + 1)));
+    const next = cap(quantity + 1);
+    setQtyText(String(next));
     setCalcContext({});
+    dispatchQty(next);
   };
 
   const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,13 +145,16 @@ export default function ProductCTAs({
     if (raw === "" || /^\d+$/.test(raw)) {
       setQtyText(raw);
       setCalcContext({});
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n) && n > 0) dispatchQty(n);
     }
   };
 
   const handleQtyBlur = () => {
     const n = parseInt(qtyText, 10);
     const next = Number.isFinite(n) && n > 0 ? n : 1;
-    setQtyText(String(next));
+    if (String(next) !== qtyText) setQtyText(String(next));
+    dispatchQty(next);
   };
 
   // Helper text only when the variant is fully out of stock — and even
@@ -226,7 +245,11 @@ export default function ProductCTAs({
           <span className="text-saro-dark">
             {[
               calcContext.totalSqft !== undefined
-                ? `${calcContext.totalSqft} ft²`
+                ? `${
+                    Number.isInteger(calcContext.totalSqft)
+                      ? calcContext.totalSqft
+                      : calcContext.totalSqft.toFixed(1)
+                  } ft²`
                 : null,
               calcContext.boxes !== undefined
                 ? `${calcContext.boxes} box${

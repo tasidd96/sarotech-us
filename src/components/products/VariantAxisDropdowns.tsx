@@ -212,7 +212,13 @@ export default function VariantAxisDropdowns({
     );
     const target = exact ?? partial;
     if (target) {
-      router.push(`/products/${productSlug}/${variantSlug(target)}`);
+      // Always pin the axis as a query param. variantSlug only encodes
+      // sku + variantName, so two siblings sharing a name but differing
+      // on this axis would land on the SAME URL — Next would no-op the
+      // push and the page wouldn't re-render. The query forces a
+      // distinct URL and the page resolver picks the right variant.
+      const qs = new URLSearchParams({ [axisName]: optionName }).toString();
+      router.push(`/products/${productSlug}/${variantSlug(target)}?${qs}`);
     }
   };
 
