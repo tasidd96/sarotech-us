@@ -35,17 +35,29 @@ export default function VariantSwatches({
   const swatches = useMemo(() => {
     const axes: VariantAxis[] = product.variantAxes ?? [];
     const selected = product.selectedOptions ?? {};
-    // Lock all non-primary axes (Color is index 0) unless the user has
-    // explicitly picked "All <AxisName>" for that axis.
-    const lockedAxes = axes.slice(1).filter((axis) => !overrides[axis.name]);
+    // Lock every non-Color axis to the current selection unless the user
+    // has explicitly picked "All <AxisName>" via the dropdown. Color is
+    // identified by axis NAME (case-insensitive), not by index — HL puts
+    // axes in arbitrary order (Ribs first on Coextruded Wall Panel,
+    // Color first on Decking/Flooring). Keep this in sync with the
+    // matching default in VariantAxisDropdowns.
+    const lockedAxes = axes
+      .filter((axis) => !/^color$/i.test(axis.name))
+      .filter((axis) => !overrides[axis.name]);
 
     const seen = new Set<string>();
     return siblings.filter((s) => {
       if (lockedAxes.length > 0) {
-        if (!s.selectedOptions) return false;
-        const allMatch = lockedAxes.every(
-          (axis) => s.selectedOptions?.[axis.name] === selected[axis.name]
-        );
+        // Lenient match: only reject when the sibling has a known value
+        // for the axis that explicitly differs from the current selection.
+        // Missing or empty axis data is ignored — HL's variantOptionIds
+        // aren't always wired, and an empty `selectedOptions` shouldn't
+        // make a sibling vanish from the swatch grid.
+        const allMatch = lockedAxes.every((axis) => {
+          const sibValue = s.selectedOptions?.[axis.name];
+          if (sibValue === undefined) return true;
+          return sibValue === selected[axis.name];
+        });
         if (!allMatch) return false;
       }
       const slug = variantSlug(s);
