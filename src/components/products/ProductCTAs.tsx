@@ -230,7 +230,7 @@ export default function ProductCTAs({
 
         <Link
           href={quoteHref}
-          className="inline-flex w-full flex-shrink-0 items-center justify-center whitespace-nowrap rounded bg-saro-dark px-6 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-black sm:w-auto"
+          className="inline-flex w-full flex-shrink-0 items-center justify-center whitespace-nowrap rounded bg-saro-green px-6 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto"
         >
           Request a Quote
         </Link>
