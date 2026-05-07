@@ -159,7 +159,7 @@ export default function Footer() {
                 Contact
               </p>
               <a
-                href="tel:+18325551234"
+                href="tel:+18324476566"
                 style={{
                   fontFamily: "PasticheGrotesque, Arial, sans-serif",
                   color: "#fff",
@@ -167,7 +167,7 @@ export default function Footer() {
                   fontSize: "0.95rem",
                 }}
               >
-                (832) 555-1234
+                (832) 447-6566
               </a>
             </div>
 

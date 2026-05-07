@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Inventory } from "@/lib/types";
-import PriceBlock from "./PriceBlock";
 import { discountPercent, formatUSD } from "@/lib/price";
 import { buildQuoteUrl } from "@/lib/quote";
 import type { CalculatorResultEvent } from "./MaterialCalculator";
@@ -137,10 +136,9 @@ export default function ProductCTAs({
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      {/* Unit price headline — anchors the quote action with a clear $. */}
-      {typeof price === "number" && (
-        <PriceBlock price={price} listPrice={listPrice} size="lg" />
-      )}
+      {/* Unit-price headline removed per Talha — pricing context is now
+          carried by the estimated subtotal beside the qty stepper. The
+          PriceBlock is still used on the listing cards. */}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         {/* Stepper — 44px tap targets for thumbs */}
