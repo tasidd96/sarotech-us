@@ -3,9 +3,12 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Product, VariantAxis } from "@/lib/types";
+import { Product } from "@/lib/types";
 import { variantSlug, variantLabel } from "@/lib/slug";
-import { useVariantSelection } from "./VariantSelectionContext";
+import {
+  pickControlledAxis,
+  useVariantSelection,
+} from "./VariantSelectionContext";
 
 type Props = {
   product: Product;
@@ -33,17 +36,15 @@ export default function VariantSwatches({
   const { overrides } = useVariantSelection();
 
   const swatches = useMemo(() => {
-    const axes: VariantAxis[] = product.variantAxes ?? [];
     const selected = product.selectedOptions ?? {};
-    // Lock every non-Color axis to the current selection unless the user
-    // has explicitly picked "All <AxisName>" via the dropdown. Color is
-    // identified by axis NAME (case-insensitive), not by index — HL puts
-    // axes in arbitrary order (Ribs first on Coextruded Wall Panel,
-    // Color first on Decking/Flooring). Keep this in sync with the
-    // matching default in VariantAxisDropdowns.
-    const lockedAxes = axes
-      .filter((axis) => !/^color$/i.test(axis.name))
-      .filter((axis) => !overrides[axis.name]);
+    // Lock the SAME axis that VariantAxisDropdowns surfaces (the
+    // "controlled" axis — first non-Color, falling back to first axis
+    // for Color-only products like Cladding). Override on that axis
+    // unlocks the grid. Other axes (if any) are ignored — they don't
+    // have a dropdown, so the user can't navigate between them anyway.
+    const controlled = pickControlledAxis(product.variantAxes);
+    const lockedAxes =
+      controlled && !overrides[controlled.name] ? [controlled] : [];
 
     const seen = new Set<string>();
     return siblings.filter((s) => {

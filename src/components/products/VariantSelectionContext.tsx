@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import type { VariantAxis } from "@/lib/types";
 
 /**
  * Tracks per-axis "show all" overrides so the user can opt out of
@@ -20,6 +21,27 @@ import { createContext, useContext, useState, ReactNode } from "react";
  */
 
 export const ALL_OVERRIDE = "__all__";
+
+/**
+ * Picks at most ONE axis to surface as a dropdown (and to lock the
+ * swatch grid against). Rule:
+ *   1. Prefer the first non-Color axis (Ribs, Size, Style, …) — these
+ *      are the categorical attributes; Color is picked from the
+ *      visual swatch grid.
+ *   2. Fall back to the first axis (typically Color) if no non-Color
+ *      axis exists. This is what Cladding gets — it's a Color-only
+ *      product, and a Color dropdown is better than no dropdown.
+ *
+ * Both VariantAxisDropdowns (renders) and VariantSwatches (locks the
+ * grid) call this so they stay in sync.
+ */
+export function pickControlledAxis(
+  axes: VariantAxis[] | undefined
+): VariantAxis | null {
+  if (!axes || axes.length === 0) return null;
+  const nonColor = axes.find((a) => !/^color$/i.test(a.name));
+  return nonColor ?? axes[0] ?? null;
+}
 
 interface Ctx {
   /** Map of axis name → boolean (true = "All <axis>" picked). */

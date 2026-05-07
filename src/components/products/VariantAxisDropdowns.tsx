@@ -6,6 +6,7 @@ import { Product, VariantAxis } from "@/lib/types";
 import { variantSlug } from "@/lib/slug";
 import {
   ALL_OVERRIDE,
+  pickControlledAxis,
   useVariantSelection,
 } from "./VariantSelectionContext";
 
@@ -13,13 +14,6 @@ type Props = {
   product: Product;
   siblings: Product[];
   productSlug: string;
-  /**
-   * Filter the parent's `variantAxes` before rendering. Defaults to
-   * skipping any axis named "Color" (case-insensitive) since color is
-   * picked via the swatch grid, which is the more visual pattern. Pass
-   * `() => true` to render every axis as a dropdown.
-   */
-  axisFilter?: (axis: VariantAxis, index: number) => boolean;
 };
 
 function Chevron() {
@@ -153,22 +147,26 @@ function AxisDropdown({
 }
 
 /**
- * Inline-friendly dropdown row for HighLevel variant axes. Renders one
- * compact dropdown per axis that passes `axisFilter`. By default the
- * first axis (Color) is skipped — colors are selected from the swatch
- * grid (a more visual pattern). Remaining axes (Size, Rib, Style, …)
- * sit inline with the product title on the PDP.
+ * Renders ONE custom dropdown for the product's "controlled" axis.
+ * Rule (see pickControlledAxis): prefer the first non-Color axis (Ribs,
+ * Size, Style, …); fall back to the first axis (typically Color) for
+ * Color-only products like Cladding so they still get a dropdown.
+ *
+ * Earlier this component rendered every non-Color axis. Talha asked to
+ * cap at one — extra axes were noisy on products with multiple
+ * categorical attributes — and to ensure Cladding (no non-Color axis)
+ * still shows a dropdown.
  */
 export default function VariantAxisDropdowns({
   product,
   siblings,
   productSlug,
-  axisFilter = (axis) => !/^color$/i.test(axis.name),
 }: Props) {
   const router = useRouter();
   const { overrides, setOverride } = useVariantSelection();
   const allAxes = product.variantAxes ?? [];
-  const axes = allAxes.filter((axis, i) => axisFilter(axis, i));
+  const controlled = pickControlledAxis(allAxes);
+  const axes: VariantAxis[] = controlled ? [controlled] : [];
   const selected = product.selectedOptions ?? {};
 
   const availableByAxis = useMemo(() => {
