@@ -65,16 +65,17 @@ export default function PromoBanner() {
       <div className="promo-banner-content">
         <span className="promo-banner-text">
           30% off this month
-          {remaining && (
+          {remaining ? (
             <>
-              {" — ends in "}
+              {" → ends in "}
               <span className="promo-banner-timer tabular-nums">
                 {remaining.days}d {pad(remaining.hours)}h{" "}
                 {pad(remaining.minutes)}m {pad(remaining.seconds)}s
               </span>
             </>
-          )}{" "}
-          &nbsp;→
+          ) : (
+            " →"
+          )}
         </span>
       </div>
     </Link>

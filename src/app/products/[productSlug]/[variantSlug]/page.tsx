@@ -153,11 +153,10 @@ export default async function ProductVariantPage({
                     {CATEGORY_LABEL[variant.category]}
                   </span>
                 </div>
-                {/* Variant-code row, with the stock pill inline beside it
-                    (e.g. "10109-Decking · IN STOCK · 30% OFF"). The pill
-                    sits next to the variantCode, not next to the H1. */}
+                {/* Stock pill comes first, variantCode follows
+                    (e.g. "IN STOCK · 30% OFF · 10109-Decking"). Earlier
+                    pass had them flipped; the pill anchors the row now. */}
                 <div className="product-detail-tone mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14.4px] text-gray-500">
-                  <span>{variantCode}</span>
                   {variant.inventory && (
                     <StockPill
                       inventory={variant.inventory}
@@ -167,6 +166,7 @@ export default async function ProductVariantPage({
                       )}
                     />
                   )}
+                  <span>{variantCode}</span>
                 </div>
               </div>
 
