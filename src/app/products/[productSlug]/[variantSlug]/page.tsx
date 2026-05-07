@@ -12,6 +12,7 @@ import StockPill from "@/components/products/StockPill";
 import ToneSelector from "@/components/products/ToneSelector";
 import VariantSelector from "@/components/products/VariantSelector";
 import { formatInches } from "@/lib/units";
+import { discountPercent } from "@/lib/price";
 
 type PageParams = { productSlug: string; variantSlug: string };
 
@@ -155,7 +156,14 @@ export default async function ProductVariantPage({
                 </span>
                 {variant.inventory && (
                   <div className="mt-3">
-                    <StockPill inventory={variant.inventory} size="md" />
+                    <StockPill
+                      inventory={variant.inventory}
+                      size="md"
+                      discountPercent={discountPercent(
+                        variant.price,
+                        variant.listPrice
+                      )}
+                    />
                   </div>
                 )}
               </div>
