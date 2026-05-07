@@ -11,6 +11,7 @@ export default function ContactForm() {
   const qtyParam = searchParams.get("qty") ?? "";
   const sqftParam = searchParams.get("sqft") ?? "";
   const priceParam = searchParams.get("price") ?? "";
+  const overageParam = searchParams.get("overage") === "1";
   // PDP CTAs and the calculator route through buildQuoteUrl(), which
   // includes a pre-formatted `body` param. When present, it's used verbatim
   // — the form below the textarea also still constructs a fallback message
@@ -64,7 +65,8 @@ export default function ContactForm() {
             {qtyParam && <>Quantity: {qtyParam} pcs. </>}
             {boxesParam && <>Boxes: {boxesParam}. </>}
             {sqftParam && <>Area: {sqftParam} ft². </>}
-            {priceParam && <>Unit price: ${priceParam}.</>}
+            {priceParam && <>Unit price: ${priceParam}. </>}
+            {overageParam && <>+10% overage included.</>}
           </p>
         </div>
       )}

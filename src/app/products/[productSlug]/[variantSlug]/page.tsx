@@ -138,7 +138,7 @@ export default async function ProductVariantPage({
           </nav>
 
           <div
-            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[420px_minmax(0,1fr)] lg:gap-12"
+            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12"
           >
             {/* LEFT COLUMN — title block + main image */}
             <div className="product-left-column flex flex-col gap-[30px]">
@@ -168,13 +168,13 @@ export default async function ProductVariantPage({
                 )}
               </div>
 
-              <div className="product-image-section relative mx-auto h-[340px] w-full max-w-[420px] overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto">
+              <div className="product-image-section relative mx-auto h-[340px] w-full overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto lg:max-w-none">
                 <Image
                   src={variant.image}
                   alt={`${variant.name} — ${variant.variantName}`}
                   fill
                   priority
-                  sizes="(min-width: 1024px) 420px, 90vw"
+                  sizes="(min-width: 1024px) 700px, 90vw"
                   className="object-contain p-2"
                 />
               </div>

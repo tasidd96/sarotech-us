@@ -54,6 +54,7 @@ export default function ProductCTAs({
   const [calcContext, setCalcContext] = useState<{
     boxes?: number;
     totalSqft?: number;
+    overage?: boolean;
   }>({});
 
   // Subscribe to calculator results and mirror the piece count onto the
@@ -67,6 +68,7 @@ export default function ProductCTAs({
       setCalcContext({
         boxes: detail.boxes > 0 ? detail.boxes : undefined,
         totalSqft: detail.totalSqft > 0 ? detail.totalSqft : undefined,
+        overage: detail.overage,
       });
     };
     window.addEventListener("saro:calculator-result", onCalc);
@@ -91,6 +93,7 @@ export default function ProductCTAs({
     totalSqft: calcContext.totalSqft,
     price,
     listPrice,
+    overage: calcContext.overage,
   });
 
   // Cap the stepper at on-hand quantity when we know it AND out-of-stock
@@ -136,9 +139,13 @@ export default function ProductCTAs({
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        {/* Stepper — 44px tap targets for thumbs */}
-        <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
+      {/* Outer wrapper goes from stacked (mobile) to a single row (sm+) so the
+          stepper / pricing context / Request-a-Quote button can sit on one
+          line when there's room and stack vertically when there isn't. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          {/* Stepper — 44px tap targets for thumbs */}
+          <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button
             type="button"
             onClick={decrement}
@@ -188,9 +195,9 @@ export default function ProductCTAs({
           </div>
         )}
 
-        {/* Calculator-derived project context — surfaces the project area
-            and box count next to the stepper so the user knows their
-            calculation is feeding the quote. */}
+        {/* Calculator-derived project context — surfaces the project area,
+            box count, and overage flag next to the stepper so the user
+            knows their calculation is feeding the quote. */}
         {(calcContext.boxes !== undefined ||
           calcContext.totalSqft !== undefined) && (
           <div className="flex flex-col">
@@ -206,17 +213,19 @@ export default function ProductCTAs({
                 : ""}
               {calcContext.boxes !== undefined &&
                 `${calcContext.boxes} box${calcContext.boxes === 1 ? "" : "es"}`}
+              {calcContext.overage ? " · +10% overage" : ""}
             </span>
           </div>
         )}
-      </div>
+        </div>
 
-      <Link
-        href={quoteHref}
-        className="inline-flex items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto sm:self-start"
-      >
-        Request a Quote
-      </Link>
+        <Link
+          href={quoteHref}
+          className="inline-flex w-full items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto"
+        >
+          Request a Quote
+        </Link>
+      </div>
 
       {helper && <p className="text-[12px] text-gray-500">{helper}</p>}
 

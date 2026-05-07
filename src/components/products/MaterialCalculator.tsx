@@ -20,14 +20,21 @@ type Props = {
  * ProductCTAs subscribes so the quantity stepper auto-updates and the
  * quote URL it builds carries the same calc context as this calculator's
  * own button.
+ *
+ * `pieces` and `boxes` already include the 10%-overage inflation when
+ * `overage` is true. `totalSqft` is the user's raw project area
+ * (unchanged) so the form can echo back what they typed.
  */
 export interface CalculatorResultEvent {
   pieces: number;
   boxes: number;
   totalSqft: number;
+  overage: boolean;
 }
 
 type Mode = "sqft" | "dimensions";
+
+const OVERAGE_MULTIPLIER = 1.1;
 
 export default function MaterialCalculator({
   dimensions,
@@ -43,6 +50,10 @@ export default function MaterialCalculator({
   const [sqft, setSqft] = useState("");
   const [widthFt, setWidthFt] = useState("");
   const [heightFt, setHeightFt] = useState("");
+  // Overage default: ON. Industry-standard recommendation is +10% to
+  // cover cuts and replacements; pre-checking it makes the math safer
+  // by default and the toggle still lets the user opt out.
+  const [overage, setOverage] = useState(true);
 
   // Derive per-piece coverage from product dimensions when available.
   // sqftPerBox (canonical marketing number) wins for box math; if it's
@@ -56,8 +67,6 @@ export default function MaterialCalculator({
     (sqftPerPiece && piecesPerBox ? sqftPerPiece * piecesPerBox : undefined);
 
   // Calculator runs as soon as we know either per-piece or per-box coverage.
-  // Per-piece alone is enough to count pieces; boxes column simply hides when
-  // we don't have enough info to derive whole-box quantities.
   const canCalculate = !!sqftPerPiece || !!effectiveSqftPerBox;
 
   const { totalSqft, pieces, boxes, coveredSqft, hasInput } = useMemo(() => {
@@ -79,14 +88,16 @@ export default function MaterialCalculator({
         hasInput: usableTotal > 0,
       };
     }
+    // Inflate the area before piece/box math when overage is on. The user's
+    // typed total stays untouched in `totalSqft`; pieces/boxes/coveredSqft
+    // reflect the buffered amount.
+    const adjustedTotal = usableTotal * (overage ? OVERAGE_MULTIPLIER : 1);
     const perBox = piecesPerBox && piecesPerBox > 0 ? piecesPerBox : 0;
     const exactPieces = sqftPerPiece
-      ? Math.ceil(usableTotal / sqftPerPiece)
+      ? Math.ceil(adjustedTotal / sqftPerPiece)
       : 0;
-    // Round up to whole boxes when we know per-box coverage; otherwise
-    // pieces are reported directly from per-piece coverage.
     const boxCount = effectiveSqftPerBox
-      ? Math.ceil(usableTotal / effectiveSqftPerBox)
+      ? Math.ceil(adjustedTotal / effectiveSqftPerBox)
       : 0;
     const pieceCount =
       effectiveSqftPerBox && perBox > 0 ? boxCount * perBox : exactPieces;
@@ -107,6 +118,7 @@ export default function MaterialCalculator({
     sqft,
     widthFt,
     heightFt,
+    overage,
     canCalculate,
     effectiveSqftPerBox,
     sqftPerPiece,
@@ -118,7 +130,8 @@ export default function MaterialCalculator({
 
   // Whenever the user produces a meaningful calc result, broadcast it so
   // the PDP's CTA stepper (further up the page) can auto-fill its quantity
-  // input and surface a subtotal that matches the project size.
+  // input and surface a subtotal that matches the project size. The
+  // `overage` flag travels too so the CTA can label "(+10% overage)".
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!hasInput || !canCalculate) return;
@@ -126,9 +139,10 @@ export default function MaterialCalculator({
       pieces,
       boxes,
       totalSqft,
+      overage,
     };
     window.dispatchEvent(new CustomEvent("saro:calculator-result", { detail }));
-  }, [hasInput, canCalculate, pieces, boxes, totalSqft]);
+  }, [hasInput, canCalculate, pieces, boxes, totalSqft, overage]);
 
   const quoteHref = buildQuoteUrl({
     productName,
@@ -139,6 +153,7 @@ export default function MaterialCalculator({
     totalSqft: totalSqft > 0 ? totalSqft : undefined,
     price,
     listPrice,
+    overage,
   });
 
   // Result columns are conditional: only show what we can actually compute.
@@ -246,12 +261,6 @@ export default function MaterialCalculator({
                   </span>
                 </div>
               )}
-              {!effectiveSqftPerBox && (
-                <p className="text-[12px] italic text-gray-500">
-                  Per-box coverage isn&apos;t published for this variant. Piece
-                  count is exact, ask sales for box quantities.
-                </p>
-              )}
             </div>
 
             {/* Result columns */}
@@ -276,11 +285,46 @@ export default function MaterialCalculator({
           </p>
         )}
 
-        <div className="calculator-footer-row flex flex-wrap items-center justify-between gap-4">
-          <div className="recommendation-text text-[13.6px] italic text-gray-500">
-            *We recommend adding 10% extra material to cover cuts and
-            replacements.
-          </div>
+        <div className="calculator-footer-row flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          {/* Overage toggle replaces the static "+10%" recommendation. Default
+              ON; clicking flips it. The flag travels into the quote URL +
+              body so sales sees whether the qty already includes the buffer. */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={overage}
+            onClick={() => setOverage((v) => !v)}
+            className={`overage-toggle inline-flex items-center gap-2 self-start rounded-full border px-4 py-2 text-[13px] font-medium transition-colors ${
+              overage
+                ? "border-saro-green bg-saro-green text-white hover:bg-saro-green-light"
+                : "border-gray-400 bg-white text-saro-dark hover:border-saro-green hover:text-saro-green"
+            }`}
+          >
+            <span
+              aria-hidden
+              className={`flex h-4 w-4 items-center justify-center rounded-full border ${
+                overage
+                  ? "border-white bg-white text-saro-green"
+                  : "border-gray-400 bg-transparent"
+              }`}
+            >
+              {overage ? (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : null}
+            </span>
+            <span>Add 10% overage for cuts &amp; replacements</span>
+          </button>
           <a
             href={quoteHref}
             aria-disabled={!hasInput}
