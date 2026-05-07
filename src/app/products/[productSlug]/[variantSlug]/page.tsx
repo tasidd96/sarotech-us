@@ -153,11 +153,12 @@ export default async function ProductVariantPage({
                     {CATEGORY_LABEL[variant.category]}
                   </span>
                 </div>
-                {/* Stock pill comes first, variantCode follows
-                    (e.g. "IN STOCK · 30% OFF · 10109-Decking"). Earlier
-                    pass had them flipped; the pill anchors the row now. */}
-                <div className="product-detail-tone mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14.4px] text-gray-500">
-                  {variant.inventory && (
+                {/* Stock pill sits alone under the title row. The variant
+                    code (e.g. "A125-Antique Black Brushed") moved to the
+                    right column inline with the rib/size dropdown — see
+                    the .product-axis-section row below. */}
+                {variant.inventory && (
+                  <div className="mt-2">
                     <StockPill
                       inventory={variant.inventory}
                       discountPercent={discountPercent(
@@ -165,9 +166,8 @@ export default async function ProductVariantPage({
                         variant.listPrice
                       )}
                     />
-                  )}
-                  <span>{variantCode}</span>
-                </div>
+                  </div>
+                )}
               </div>
 
               <div className="product-image-section relative mx-auto h-[340px] w-full overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto lg:max-w-none">
@@ -188,12 +188,18 @@ export default async function ProductVariantPage({
             <div className="product-right-column flex flex-col gap-[25px] pt-5">
               {variant.variantAxes && variant.variantAxes.length > 0 ? (
                 <>
-                  <div className="product-axis-section border-t-2 border-black p-[10px]">
+                  {/* Axis dropdown row, with the variant code (e.g.
+                      "A125-Antique Black Brushed") inline on the right
+                      so the row reads like "Ribs: 3-Ribs ▾ ··· A125-…". */}
+                  <div className="product-axis-section flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2 border-t-2 border-black p-[10px]">
                     <VariantAxisDropdowns
                       product={variant}
                       siblings={siblings}
                       productSlug={productSlug}
                     />
+                    <span className="text-[14.4px] text-saro-dark">
+                      {variantCode}
+                    </span>
                   </div>
                   <VariantSwatches
                     product={variant}

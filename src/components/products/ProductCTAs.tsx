@@ -139,13 +139,12 @@ export default function ProductCTAs({
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      {/* Outer wrapper: stacked on mobile, a single tight nowrap row on sm+
-          so qty stepper · estimated subtotal · request-a-quote button never
-          break to multiple lines on desktop. The inner stepper-row still
-          wraps internally if subtotal + calc-context get too wide, but the
-          button stays anchored on the right with shrink-0 + nowrap. */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-center sm:gap-4">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-2">
+      {/* Outer wrapper: stacked on mobile, a single tight nowrap row on
+          sm+. items-stretch + each block locked to h-[44px] keeps the
+          stepper, subtotal, calc context, and Request-a-Quote button all
+          on the same baseline (no rogue margin makes the button float). */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-stretch sm:gap-4">
+        <div className="flex min-w-0 flex-1 flex-wrap items-stretch gap-x-2 gap-y-2">
           {/* Stepper — 44px tap targets for thumbs */}
           <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button
@@ -177,19 +176,19 @@ export default function ProductCTAs({
           </button>
         </div>
 
-        {/* Estimated subtotal next to the stepper — price × qty, with
-            strikethrough list subtotal when there's an active discount. */}
+        {/* Estimated subtotal — height-matched to the stepper (44px)
+            so it sits on the same line visually. */}
         {typeof subtotal === "number" && (
-          <div className="flex flex-col">
-            <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
+          <div className="flex h-11 flex-col justify-center">
+            <span className="text-[11px] uppercase leading-none tracking-[0.5px] text-gray-500">
               Estimated subtotal
             </span>
-            <div className="flex flex-wrap items-baseline gap-2">
-              <span className="text-[18px] font-semibold text-saro-dark">
+            <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
+              <span className="text-[16px] font-semibold leading-none text-saro-dark">
                 {formatUSD(subtotal)}
               </span>
               {typeof listSubtotal === "number" && off !== undefined && (
-                <span className="text-[12px] text-gray-500 line-through">
+                <span className="text-[12px] leading-none text-gray-500 line-through">
                   {formatUSD(listSubtotal)}
                 </span>
               )}
@@ -197,44 +196,41 @@ export default function ProductCTAs({
           </div>
         )}
 
-        {/* Calculator-derived project context — surfaces the project area,
-            box count, and overage flag next to the stepper so the user
-            knows their calculation is feeding the quote. */}
-        {(calcContext.boxes !== undefined ||
-          calcContext.totalSqft !== undefined) && (
-          <div className="flex flex-col">
-            <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
-              From your calculation
-            </span>
-            {/* Comma-separated calc context: "200 ft², 15 boxes,
-                +10% overage". Talha asked to drop the · dot separator
-                so the line reads as a normal sentence fragment. */}
-            <span className="text-[13px] text-saro-dark">
-              {[
-                calcContext.totalSqft !== undefined
-                  ? `${calcContext.totalSqft} ft²`
-                  : null,
-                calcContext.boxes !== undefined
-                  ? `${calcContext.boxes} box${
-                      calcContext.boxes === 1 ? "" : "es"
-                    }`
-                  : null,
-                calcContext.overage ? "+10% overage" : null,
-              ]
-                .filter(Boolean)
-                .join(", ")}
-            </span>
-          </div>
-        )}
         </div>
 
         <Link
           href={quoteHref}
-          className="inline-flex w-full flex-shrink-0 items-center justify-center whitespace-nowrap rounded bg-saro-green px-6 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto"
+          className="inline-flex h-11 w-full flex-shrink-0 items-center justify-center whitespace-nowrap rounded bg-saro-green px-4 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto"
         >
           Request a Quote
         </Link>
       </div>
+
+      {/* Calculator-derived project context — its own row underneath the
+          stepper / subtotal / quote button so it never crowds them out
+          when the right column is narrow. Comma-separated to read as a
+          sentence fragment. */}
+      {(calcContext.boxes !== undefined ||
+        calcContext.totalSqft !== undefined) && (
+        <p className="text-[12px] text-gray-600">
+          <span className="text-gray-500">From your calculation: </span>
+          <span className="text-saro-dark">
+            {[
+              calcContext.totalSqft !== undefined
+                ? `${calcContext.totalSqft} ft²`
+                : null,
+              calcContext.boxes !== undefined
+                ? `${calcContext.boxes} box${
+                    calcContext.boxes === 1 ? "" : "es"
+                  }`
+                : null,
+              calcContext.overage ? "+10% overage" : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          </span>
+        </p>
+      )}
 
       {helper && <p className="text-[12px] text-gray-500">{helper}</p>}
 
