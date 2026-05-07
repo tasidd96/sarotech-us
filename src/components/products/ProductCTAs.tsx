@@ -139,12 +139,13 @@ export default function ProductCTAs({
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      {/* Outer wrapper: stacked on mobile, a single tight nowrap row on
-          sm+. items-stretch + each block locked to h-[44px] keeps the
-          stepper, subtotal, calc context, and Request-a-Quote button all
-          on the same baseline (no rogue margin makes the button float). */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-nowrap sm:items-stretch sm:gap-4">
-        <div className="flex min-w-0 flex-1 flex-wrap items-stretch gap-x-2 gap-y-2">
+      {/* Outer wrapper stacks at every viewport now — qty stepper +
+          subtotal occupy the top row, the Request-a-Quote button sits
+          full-width directly underneath. Earlier inline pattern crowded
+          the 40% column at desktop widths; full-width button below
+          reads cleaner regardless of viewport. */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-stretch gap-x-2 gap-y-2">
           {/* Stepper — 44px tap targets for thumbs */}
           <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button
@@ -200,7 +201,7 @@ export default function ProductCTAs({
 
         <Link
           href={quoteHref}
-          className="inline-flex h-11 w-full flex-shrink-0 items-center justify-center whitespace-nowrap rounded bg-saro-green px-4 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto"
+          className="inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded bg-saro-green px-4 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light"
         >
           Request a Quote
         </Link>
