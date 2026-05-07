@@ -186,17 +186,15 @@ export default function VariantAxisDropdowns({
   if (axes.length === 0) return null;
 
   const handleChange = (axisName: string, optionName: string) => {
-    // Explicit "All <AxisName>" sentinel always enables the override.
-    if (optionName === ALL_OVERRIDE) {
+    // Re-clicking the currently-selected option (or the explicit "All
+    // <AxisName>" sentinel) always lands on the "All <Axis>" default —
+    // no toggle. Once unlocked, the user re-locks by picking a real
+    // different option (which navigates) or clicking a swatch.
+    if (
+      optionName === ALL_OVERRIDE ||
+      selected[axisName] === optionName
+    ) {
       setOverride(axisName, true);
-      return;
-    }
-    // Re-clicking the currently-selected option TOGGLES the override —
-    // first click deselects to "All <Axis>" (swatches expand), second
-    // click re-locks back to the current variant. No nav either way
-    // since we're already on that variant.
-    if (selected[axisName] === optionName) {
-      setOverride(axisName, !overrides[axisName]);
       return;
     }
     // Picking a different real option clears any prior "all" override
