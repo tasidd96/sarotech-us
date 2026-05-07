@@ -7,6 +7,17 @@ import { discountPercent, formatUSD } from "@/lib/price";
 import { buildQuoteUrl } from "@/lib/quote";
 import type { CalculatorResultEvent } from "./MaterialCalculator";
 
+/**
+ * Fire `saro:quantity-change` so the MaterialCalculator below can mirror
+ * the chosen piece count back into its inputs and result columns.
+ */
+const dispatchQty = (pieces: number) => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent("saro:quantity-change", { detail: { pieces } }),
+  );
+};
+
 interface Props {
   productName: string;
   variantCode: string;
@@ -54,6 +65,7 @@ export default function ProductCTAs({
   const [calcContext, setCalcContext] = useState<{
     boxes?: number;
     totalSqft?: number;
+    overage?: boolean;
   }>({});
 
   // Subscribe to calculator results and mirror the piece count onto the
@@ -62,11 +74,20 @@ export default function ProductCTAs({
   useEffect(() => {
     const onCalc = (e: Event) => {
       const detail = (e as CustomEvent<CalculatorResultEvent>).detail;
-      if (!detail || detail.pieces <= 0) return;
+      if (!detail) return;
+      // Reset case: user cleared the calculator input → drop cached
+      // context so the "From your calculation" line vanishes instead of
+      // showing stale numbers. Don't touch the qty stepper (the user
+      // may still want to manually pick a quantity).
+      if (detail.pieces <= 0) {
+        setCalcContext({});
+        return;
+      }
       setQtyText(String(detail.pieces));
       setCalcContext({
         boxes: detail.boxes > 0 ? detail.boxes : undefined,
         totalSqft: detail.totalSqft > 0 ? detail.totalSqft : undefined,
+        overage: detail.overage,
       });
     };
     window.addEventListener("saro:calculator-result", onCalc);
@@ -91,6 +112,7 @@ export default function ProductCTAs({
     totalSqft: calcContext.totalSqft,
     price,
     listPrice,
+    overage: calcContext.overage,
   });
 
   // Cap the stepper at on-hand quantity when we know it AND out-of-stock
@@ -102,15 +124,20 @@ export default function ProductCTAs({
   };
 
   const decrement = () => {
-    setQtyText(String(Math.max(1, quantity - 1)));
+    const next = Math.max(1, quantity - 1);
+    setQtyText(String(next));
     // Manual edit invalidates the calc context — the boxes/sqft were tied
-    // to the previous qty. Drop them so the quote body reflects only what
-    // the user is actually looking at now.
+    // to the previous qty. Drop them; the calculator below will repopulate
+    // via `saro:calculator-result` after it reverse-derives ft² from the
+    // new piece count.
     setCalcContext({});
+    dispatchQty(next);
   };
   const increment = () => {
-    setQtyText(String(cap(quantity + 1)));
+    const next = cap(quantity + 1);
+    setQtyText(String(next));
     setCalcContext({});
+    dispatchQty(next);
   };
 
   const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,13 +145,16 @@ export default function ProductCTAs({
     if (raw === "" || /^\d+$/.test(raw)) {
       setQtyText(raw);
       setCalcContext({});
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n) && n > 0) dispatchQty(n);
     }
   };
 
   const handleQtyBlur = () => {
     const n = parseInt(qtyText, 10);
     const next = Number.isFinite(n) && n > 0 ? n : 1;
-    setQtyText(String(next));
+    if (String(next) !== qtyText) setQtyText(String(next));
+    dispatchQty(next);
   };
 
   // Helper text only when the variant is fully out of stock — and even
@@ -136,9 +166,15 @@ export default function ProductCTAs({
 
   return (
     <div className="product-cta-section mt-2 flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        {/* Stepper — 44px tap targets for thumbs */}
-        <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
+      {/* Outer wrapper stacks at every viewport now — qty stepper +
+          subtotal occupy the top row, the Request-a-Quote button sits
+          full-width directly underneath. Earlier inline pattern crowded
+          the 40% column at desktop widths; full-width button below
+          reads cleaner regardless of viewport. */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-stretch gap-x-5 gap-y-2">
+          {/* Stepper — 44px tap targets for thumbs */}
+          <div className="inline-flex items-stretch overflow-hidden rounded-md border border-saro-dark">
           <button
             type="button"
             onClick={decrement}
@@ -168,19 +204,19 @@ export default function ProductCTAs({
           </button>
         </div>
 
-        {/* Estimated subtotal next to the stepper — price × qty, with
-            strikethrough list subtotal when there's an active discount. */}
+        {/* Estimated subtotal — height-matched to the stepper (44px)
+            so it sits on the same line visually. */}
         {typeof subtotal === "number" && (
-          <div className="flex flex-col">
-            <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
+          <div className="flex h-11 flex-col justify-center">
+            <span className="text-[11px] uppercase leading-none tracking-[0.5px] text-gray-500">
               Estimated subtotal
             </span>
-            <div className="flex flex-wrap items-baseline gap-2">
-              <span className="text-[18px] font-semibold text-saro-dark">
+            <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
+              <span className="text-[16px] font-semibold leading-none text-saro-dark">
                 {formatUSD(subtotal)}
               </span>
               {typeof listSubtotal === "number" && off !== undefined && (
-                <span className="text-[12px] text-gray-500 line-through">
+                <span className="text-[12px] leading-none text-gray-500 line-through">
                   {formatUSD(listSubtotal)}
                 </span>
               )}
@@ -188,35 +224,45 @@ export default function ProductCTAs({
           </div>
         )}
 
-        {/* Calculator-derived project context — surfaces the project area
-            and box count next to the stepper so the user knows their
-            calculation is feeding the quote. */}
-        {(calcContext.boxes !== undefined ||
-          calcContext.totalSqft !== undefined) && (
-          <div className="flex flex-col">
-            <span className="text-[11px] uppercase tracking-[0.5px] text-gray-500">
-              From your calculation
-            </span>
-            <span className="text-[13px] text-saro-dark">
-              {calcContext.totalSqft !== undefined &&
-                `${calcContext.totalSqft} ft²`}
-              {calcContext.totalSqft !== undefined &&
-              calcContext.boxes !== undefined
-                ? " · "
-                : ""}
-              {calcContext.boxes !== undefined &&
-                `${calcContext.boxes} box${calcContext.boxes === 1 ? "" : "es"}`}
-            </span>
-          </div>
-        )}
+        </div>
+
+        <Link
+          href={quoteHref}
+          className="inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded bg-saro-green px-4 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light"
+        >
+          Request a Quote
+        </Link>
       </div>
 
-      <Link
-        href={quoteHref}
-        className="inline-flex items-center justify-center rounded bg-saro-green px-8 py-3 text-[14px] font-semibold uppercase tracking-wider text-white transition-colors hover:bg-saro-green-light sm:w-auto sm:self-start"
-      >
-        Request a Quote
-      </Link>
+      {/* Calculator-derived project context — its own row underneath the
+          stepper / subtotal / quote button so it never crowds them out
+          when the right column is narrow. Comma-separated to read as a
+          sentence fragment. */}
+      {(calcContext.boxes !== undefined ||
+        calcContext.totalSqft !== undefined) && (
+        <p className="text-[12px] text-gray-600">
+          <span className="text-gray-500">From your calculation: </span>
+          <span className="text-saro-dark">
+            {[
+              calcContext.totalSqft !== undefined
+                ? `${
+                    Number.isInteger(calcContext.totalSqft)
+                      ? calcContext.totalSqft
+                      : calcContext.totalSqft.toFixed(1)
+                  } ft²`
+                : null,
+              calcContext.boxes !== undefined
+                ? `${calcContext.boxes} box${
+                    calcContext.boxes === 1 ? "" : "es"
+                  }`
+                : null,
+              calcContext.overage ? "+10% overage" : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          </span>
+        </p>
+      )}
 
       {helper && <p className="text-[12px] text-gray-500">{helper}</p>}
 

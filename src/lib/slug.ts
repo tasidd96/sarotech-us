@@ -53,3 +53,37 @@ export function findVariant(
     ) ?? null
   );
 }
+
+/**
+ * Variant resolution that honors axis search params. variantSlug only
+ * encodes sku + variantName, so two variants that share a name but
+ * differ on a non-Color axis (e.g. A50-Antique Brushed in 3-Ribs vs
+ * 4-Ribs) collide on the same URL slug. The dropdown / swatch grid
+ * disambiguates by appending the controlled axis as a query param
+ * (e.g. `?Ribs=4-Ribs`); this helper picks the matching variant.
+ *
+ * Falls back to the first slug match when no params are supplied or
+ * none match — keeps clean-URL deep links working.
+ */
+export function findVariantWithParams(
+  productSlugInput: string,
+  variantSlugInput: string,
+  axisFilters: Record<string, string>,
+  catalog: Product[]
+): Product | null {
+  const matches = catalog.filter(
+    (p) =>
+      slugify(p.name) === productSlugInput &&
+      variantSlug(p) === variantSlugInput
+  );
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+  const filterEntries = Object.entries(axisFilters).filter(
+    ([, v]) => typeof v === "string" && v.length > 0
+  );
+  if (filterEntries.length === 0) return matches[0];
+  const exact = matches.find((p) =>
+    filterEntries.every(([k, v]) => p.selectedOptions?.[k] === v)
+  );
+  return exact ?? matches[0];
+}

@@ -140,29 +140,22 @@ export default function VariantSelector({
     return result;
   }, [siblings]);
 
-  // Swatches grid varies along the *primary* (first) axis. All other
-  // axes are locked to the user's current selection so the grid only
-  // shows alternatives that actually exist in the catalog for that
-  // combination — e.g. with Size=Extended picked, the grid only shows
-  // colors that come in Extended. For single-axis products the lock set
-  // is empty, so all siblings appear (unchanged from before).
+  // Swatch grid shows every sibling regardless of which dropdown
+  // options are currently picked. Earlier we locked all-but-the-primary
+  // axis to the current selection, but Talha wants the swatch selector
+  // to surface the full set of variants for the product family — e.g.
+  // selecting "3-Ribs" in the Size dropdown should still let the user
+  // jump straight to a 4-Ribs variant from the swatches without first
+  // changing Size back. So: list every sibling, dedupe by slug.
   const swatches = useMemo(() => {
-    const lockedAxes = axes.slice(1);
     const seen = new Set<string>();
     return siblings.filter((s) => {
-      if (lockedAxes.length > 0) {
-        if (!s.selectedOptions) return false;
-        const allMatch = lockedAxes.every(
-          (axis) => s.selectedOptions?.[axis.name] === selected[axis.name]
-        );
-        if (!allMatch) return false;
-      }
       const slug = variantSlug(s);
       if (seen.has(slug)) return false;
       seen.add(slug);
       return true;
     });
-  }, [axes, siblings, selected]);
+  }, [siblings]);
 
   if (axes.length === 0) return null;
 

@@ -10,16 +10,19 @@ export interface QuoteContext {
   productName: string;
   variantCode: string;
   sku?: string;
-  /** Unit count (typically pieces). */
+  /** Unit count (typically pieces). Already inflated when overage is true. */
   quantity?: number;
-  /** Whole boxes — only set when calculator math has been done. */
+  /** Whole boxes — only set when calculator math has been done. Already
+   *  inflated when overage is true. */
   boxes?: number;
-  /** Total ft² typed/computed in the calculator. */
+  /** Total ft² the user typed in the calculator (raw, NOT inflated). */
   totalSqft?: number;
   /** Unit sell price in USD. */
   price?: number;
   /** Unit list price (compareAtPrice) in USD if different from sell. */
   listPrice?: number;
+  /** When true, qty/boxes already include the +10% cut-buffer overage. */
+  overage?: boolean;
 }
 
 /**
@@ -64,6 +67,9 @@ export function formatQuoteBody(ctx: QuoteContext): string {
     const subtotal = ctx.price * ctx.quantity;
     lines.push(`- Estimated subtotal: ${formatUSD(subtotal)}`);
   }
+  if (ctx.overage) {
+    lines.push("- Includes +10% overage for cuts & replacements");
+  }
 
   lines.push("");
   lines.push("A few details about the project / installation timeline would help.");
@@ -97,6 +103,9 @@ export function buildQuoteUrl(ctx: QuoteContext): string {
   }
   if (typeof ctx.listPrice === "number") {
     params.set("listPrice", ctx.listPrice.toFixed(2));
+  }
+  if (ctx.overage) {
+    params.set("overage", "1");
   }
   params.set("body", formatQuoteBody(ctx));
   return `/contact?${params.toString()}`;

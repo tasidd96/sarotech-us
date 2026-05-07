@@ -34,9 +34,14 @@ export default function PopularProducts() {
 
         <HorizontalCarousel ariaLabel="bestsellers" scrimColor="dark" scrollStep={264}>
           {POPULAR.map((item) => (
+            // Route to the listing's correct category tab AND seed the
+            // search box with the item name so the user lands on a
+            // pre-filtered subset instead of the full catalog. If the
+            // search misses, the tab still opens, so the destination is
+            // never empty.
             <Link
               key={item.name}
-              href={`/products?q=${encodeURIComponent(item.name)}`}
+              href={`/products?tab=${item.category.toLowerCase()}&q=${encodeURIComponent(item.name)}`}
               className="group flex w-[240px] min-w-[240px] flex-shrink-0 snap-start flex-col"
             >
               <div className="relative mb-3 h-[240px] w-[240px] overflow-hidden rounded-lg bg-[#f0f0f0] transition-transform duration-300 group-hover:scale-[1.03]">

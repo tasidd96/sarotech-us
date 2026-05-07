@@ -21,19 +21,21 @@ export default function CorporatePresentation() {
               the build-out plan for the US market. One PDF, all the context you
               need to evaluate SARO TECH for your next project or pipeline.
             </p>
-            <div className="flex flex-wrap gap-3">
+            {/* Stack full-width on mobile (matches the hero nav pair); side
+                by side from sm+ onward. */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
               <a
                 href={PDF_HREF}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded bg-saro-green px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-saro-green-light"
+                className="inline-flex w-full items-center justify-center gap-2 rounded bg-saro-green px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-saro-green-light sm:w-auto"
               >
                 View 2026 Presentation
               </a>
               <a
                 href={PDF_HREF}
                 download
-                className="inline-flex items-center gap-2 rounded border border-white/30 px-8 py-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/5"
+                className="inline-flex w-full items-center justify-center gap-2 rounded border border-white/30 px-8 py-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/5 sm:w-auto"
               >
                 Download PDF
               </a>

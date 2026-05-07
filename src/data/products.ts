@@ -345,7 +345,7 @@ export const products: Product[] = [
 
 export const productTypeLabels: Record<string, string> = {
   "floor-decking": "Floor Decking",
-  "wall-panels": "Wall Panels",
+  "wall-panels": "Wall Cladding",
   "wide-wall-panels": "Wide Wall Panels",
   "synthetic-marble": "Synthetic Marble",
   "deck-accessories": "Deck Accessories",

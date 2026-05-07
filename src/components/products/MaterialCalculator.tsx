@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { ProductDimensions } from "@/lib/types";
 import { buildQuoteUrl } from "@/lib/quote";
 
+/**
+ * Detail dispatched on `saro:quantity-change` by the PDP qty stepper.
+ * The calculator listens and back-fills its sqft input + piece override
+ * so the result columns mirror the chosen quantity.
+ */
+export interface QuantityChangeEvent {
+  pieces: number;
+}
+
 type Props = {
   dimensions?: ProductDimensions;
   piecesPerBox?: number;
@@ -20,14 +29,21 @@ type Props = {
  * ProductCTAs subscribes so the quantity stepper auto-updates and the
  * quote URL it builds carries the same calc context as this calculator's
  * own button.
+ *
+ * `pieces` and `boxes` already include the 10%-overage inflation when
+ * `overage` is true. `totalSqft` is the user's raw project area
+ * (unchanged) so the form can echo back what they typed.
  */
 export interface CalculatorResultEvent {
   pieces: number;
   boxes: number;
   totalSqft: number;
+  overage: boolean;
 }
 
 type Mode = "sqft" | "dimensions";
+
+const OVERAGE_MULTIPLIER = 1.1;
 
 export default function MaterialCalculator({
   dimensions,
@@ -43,6 +59,15 @@ export default function MaterialCalculator({
   const [sqft, setSqft] = useState("");
   const [widthFt, setWidthFt] = useState("");
   const [heightFt, setHeightFt] = useState("");
+  // Overage default: ON. Industry-standard recommendation is +10% to
+  // cover cuts and replacements; pre-checking it makes the math safer
+  // by default and the toggle still lets the user opt out.
+  const [overage, setOverage] = useState(true);
+  // Pinned piece count when the PDP qty stepper drives the calc backwards.
+  // Bypasses the ceil(sqft / sqftPerPiece) path so floating-point noise
+  // can't bump an even N up to N+1. Cleared as soon as the user touches
+  // any calc input directly.
+  const [pieceOverride, setPieceOverride] = useState<number | null>(null);
 
   // Derive per-piece coverage from product dimensions when available.
   // sqftPerBox (canonical marketing number) wins for box math; if it's
@@ -56,11 +81,34 @@ export default function MaterialCalculator({
     (sqftPerPiece && piecesPerBox ? sqftPerPiece * piecesPerBox : undefined);
 
   // Calculator runs as soon as we know either per-piece or per-box coverage.
-  // Per-piece alone is enough to count pieces; boxes column simply hides when
-  // we don't have enough info to derive whole-box quantities.
   const canCalculate = !!sqftPerPiece || !!effectiveSqftPerBox;
 
   const { totalSqft, pieces, boxes, coveredSqft, hasInput } = useMemo(() => {
+    // Override path: PDP qty stepper picked an exact piece count. Use
+    // it directly so we never round drift away from what the user
+    // chose. Boxes still align to box minimums.
+    if (pieceOverride !== null && pieceOverride > 0 && sqftPerPiece) {
+      const piecesUsed = pieceOverride;
+      const exactTotal = piecesUsed * sqftPerPiece;
+      const perBox = piecesPerBox && piecesPerBox > 0 ? piecesPerBox : 0;
+      const boxCount =
+        perBox > 0
+          ? Math.ceil(piecesUsed / perBox)
+          : effectiveSqftPerBox
+          ? Math.ceil(exactTotal / effectiveSqftPerBox)
+          : 0;
+      const finalPieces = perBox > 0 ? boxCount * perBox : piecesUsed;
+      const covered = effectiveSqftPerBox
+        ? boxCount * effectiveSqftPerBox
+        : finalPieces * sqftPerPiece;
+      return {
+        totalSqft: exactTotal,
+        pieces: finalPieces,
+        boxes: boxCount,
+        coveredSqft: covered,
+        hasInput: true,
+      };
+    }
     let total = 0;
     if (mode === "sqft") {
       total = parseFloat(sqft) || 0;
@@ -79,14 +127,16 @@ export default function MaterialCalculator({
         hasInput: usableTotal > 0,
       };
     }
+    // Inflate the area before piece/box math when overage is on. The user's
+    // typed total stays untouched in `totalSqft`; pieces/boxes/coveredSqft
+    // reflect the buffered amount.
+    const adjustedTotal = usableTotal * (overage ? OVERAGE_MULTIPLIER : 1);
     const perBox = piecesPerBox && piecesPerBox > 0 ? piecesPerBox : 0;
     const exactPieces = sqftPerPiece
-      ? Math.ceil(usableTotal / sqftPerPiece)
+      ? Math.ceil(adjustedTotal / sqftPerPiece)
       : 0;
-    // Round up to whole boxes when we know per-box coverage; otherwise
-    // pieces are reported directly from per-piece coverage.
     const boxCount = effectiveSqftPerBox
-      ? Math.ceil(usableTotal / effectiveSqftPerBox)
+      ? Math.ceil(adjustedTotal / effectiveSqftPerBox)
       : 0;
     const pieceCount =
       effectiveSqftPerBox && perBox > 0 ? boxCount * perBox : exactPieces;
@@ -107,10 +157,12 @@ export default function MaterialCalculator({
     sqft,
     widthFt,
     heightFt,
+    overage,
     canCalculate,
     effectiveSqftPerBox,
     sqftPerPiece,
     piecesPerBox,
+    pieceOverride,
   ]);
 
   const fmt = (n: number) =>
@@ -118,17 +170,43 @@ export default function MaterialCalculator({
 
   // Whenever the user produces a meaningful calc result, broadcast it so
   // the PDP's CTA stepper (further up the page) can auto-fill its quantity
-  // input and surface a subtotal that matches the project size.
+  // input and surface a subtotal that matches the project size. The
+  // `overage` flag travels too so the CTA can label "(+10% overage)".
+  //
+  // We ALSO dispatch when the user clears the input (pieces/boxes/sqft
+  // back to 0) so subscribers can clear their cached calc context — the
+  // "From your calculation" panel disappears instead of holding stale
+  // numbers.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!hasInput || !canCalculate) return;
     const detail: CalculatorResultEvent = {
       pieces,
       boxes,
       totalSqft,
+      overage,
     };
     window.dispatchEvent(new CustomEvent("saro:calculator-result", { detail }));
-  }, [hasInput, canCalculate, pieces, boxes, totalSqft]);
+  }, [pieces, boxes, totalSqft, overage]);
+
+  // Reverse direction: PDP qty stepper → calculator. When the user
+  // changes quantity above, mirror it down here so the result columns
+  // stay in lockstep. Switches to ft² mode, fills the input with the
+  // implied area, drops overage (the user picked an exact qty), and
+  // pins the piece count via the override so ceil drift can't bump it.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onQty = (e: Event) => {
+      const detail = (e as CustomEvent<QuantityChangeEvent>).detail;
+      if (!detail || detail.pieces <= 0) return;
+      if (!sqftPerPiece) return;
+      setMode("sqft");
+      setSqft((detail.pieces * sqftPerPiece).toFixed(2));
+      setOverage(false);
+      setPieceOverride(detail.pieces);
+    };
+    window.addEventListener("saro:quantity-change", onQty);
+    return () => window.removeEventListener("saro:quantity-change", onQty);
+  }, [sqftPerPiece]);
 
   const quoteHref = buildQuoteUrl({
     productName,
@@ -139,6 +217,7 @@ export default function MaterialCalculator({
     totalSqft: totalSqft > 0 ? totalSqft : undefined,
     price,
     listPrice,
+    overage,
   });
 
   // Result columns are conditional: only show what we can actually compute.
@@ -176,14 +255,17 @@ export default function MaterialCalculator({
         {canCalculate ? (
           <div className="calculator-content-row grid grid-cols-1 items-center gap-[30px] lg:grid-cols-[minmax(0,462px)_repeat(4,minmax(0,1fr))]">
             {/* Input column */}
-            <div className="calculator-input-column flex flex-col gap-5">
-              <div className="calculation-options flex flex-wrap gap-6">
+            <div className="calculator-input-column flex flex-col items-center gap-5 lg:items-stretch">
+              <div className="calculation-options flex flex-wrap justify-center gap-6 lg:justify-start">
                 <label className="radio-option flex cursor-pointer items-center gap-2 text-[14px] text-saro-dark">
                   <input
                     type="radio"
                     value="sqft"
                     checked={mode === "sqft"}
-                    onChange={() => setMode("sqft")}
+                    onChange={() => {
+                      setMode("sqft");
+                      setPieceOverride(null);
+                    }}
                     name="calculationType"
                     className="accent-saro-green"
                   />
@@ -194,7 +276,10 @@ export default function MaterialCalculator({
                     type="radio"
                     value="dimensions"
                     checked={mode === "dimensions"}
-                    onChange={() => setMode("dimensions")}
+                    onChange={() => {
+                      setMode("dimensions");
+                      setPieceOverride(null);
+                    }}
                     name="calculationType"
                     className="accent-saro-green"
                   />
@@ -211,7 +296,10 @@ export default function MaterialCalculator({
                     step="0.1"
                     placeholder="150"
                     value={sqft}
-                    onChange={(e) => setSqft(e.target.value)}
+                    onChange={(e) => {
+                      setSqft(e.target.value);
+                      setPieceOverride(null);
+                    }}
                     className="area-input h-[45px] w-full flex-1 rounded border border-[#ccc] bg-white px-3 text-[16px] text-black outline-none focus:border-saro-green sm:w-[184px] sm:flex-none"
                   />
                   <span className="unit-label text-[16px] text-saro-dark">
@@ -227,7 +315,10 @@ export default function MaterialCalculator({
                     step="0.1"
                     placeholder="Width"
                     value={widthFt}
-                    onChange={(e) => setWidthFt(e.target.value)}
+                    onChange={(e) => {
+                      setWidthFt(e.target.value);
+                      setPieceOverride(null);
+                    }}
                     className="area-input h-[45px] w-full flex-1 rounded border border-[#ccc] bg-white px-3 text-[16px] text-black outline-none focus:border-saro-green sm:w-[120px] sm:flex-none"
                   />
                   <span className="text-[16px] text-saro-dark">×</span>
@@ -238,19 +329,16 @@ export default function MaterialCalculator({
                     step="0.1"
                     placeholder="Height"
                     value={heightFt}
-                    onChange={(e) => setHeightFt(e.target.value)}
+                    onChange={(e) => {
+                      setHeightFt(e.target.value);
+                      setPieceOverride(null);
+                    }}
                     className="area-input h-[45px] w-full flex-1 rounded border border-[#ccc] bg-white px-3 text-[16px] text-black outline-none focus:border-saro-green sm:w-[120px] sm:flex-none"
                   />
                   <span className="unit-label text-[16px] text-saro-dark">
                     ft
                   </span>
                 </div>
-              )}
-              {!effectiveSqftPerBox && (
-                <p className="text-[12px] italic text-gray-500">
-                  Per-box coverage isn&apos;t published for this variant. Piece
-                  count is exact, ask sales for box quantities.
-                </p>
               )}
             </div>
 
@@ -276,17 +364,66 @@ export default function MaterialCalculator({
           </p>
         )}
 
-        <div className="calculator-footer-row flex flex-wrap items-center justify-between gap-4">
-          <div className="recommendation-text text-[13.6px] italic text-gray-500">
-            *We recommend adding 10% extra material to cover cuts and
-            replacements.
-          </div>
+        {/* Footer row stacks until lg (tablet stays in mobile-style stacked
+            layout), then goes side-by-side on desktop. Earlier the breakpoint
+            was `sm:` which collapsed tablet onto a single line that's too
+            cramped for the toggle + button. */}
+        <div className="calculator-footer-row flex flex-col items-stretch gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
+          {/* Overage toggle replaces the static "+10%" recommendation. Default
+              ON; clicking flips it. Full-width on mobile/tablet, intrinsic
+              width on desktop. The flag travels into the quote URL + body so
+              sales sees whether the qty already includes the buffer. */}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={overage}
+            onClick={() => {
+              setOverage((v) => !v);
+              setPieceOverride(null);
+            }}
+            className={`overage-toggle inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2 text-[13px] font-medium transition-colors lg:w-auto lg:justify-start ${
+              overage
+                ? "border-saro-green bg-saro-green text-white hover:bg-saro-green-light"
+                : "border-gray-400 bg-white text-saro-dark hover:border-saro-green hover:text-saro-green"
+            }`}
+          >
+            <span
+              aria-hidden
+              className={`flex h-4 w-4 items-center justify-center rounded-full border ${
+                overage
+                  ? "border-white bg-white text-saro-green"
+                  : "border-gray-400 bg-transparent"
+              }`}
+            >
+              {overage ? (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : null}
+            </span>
+            <span>Add 10% overage for cuts &amp; replacements</span>
+          </button>
+          {/* Match the PDP CTA's typography (14px / tracking-wider / px-8
+              py-3) so both quote buttons read identically. Calc one is
+              the secondary entry point — disabled state is the standard
+              #999, active state takes on the footer color (#1a1a1a /
+              saro-dark) so it reads as a dark CTA distinct from the
+              primary green Request-a-Quote at the top of the PDP. */}
           <a
             href={quoteHref}
             aria-disabled={!hasInput}
-            className={`quote-btn block w-full rounded-[5px] px-12 py-3 text-center text-[17.6px] font-semibold uppercase tracking-[1px] text-white transition-colors sm:inline-block sm:w-auto sm:py-2 ${
+            className={`inline-flex w-full items-center justify-center rounded px-8 py-3 text-center text-[14px] font-semibold uppercase tracking-wider text-white transition-colors lg:w-auto ${
               hasInput
-                ? "bg-saro-green hover:bg-saro-green-light"
+                ? "bg-saro-dark hover:bg-black"
                 : "bg-[#999] pointer-events-none"
             }`}
           >

@@ -148,6 +148,31 @@ const FALLBACK_MAPPING: HLProductMapping = {
   defaultImage: "/images/categories/accessories.jpg",
 };
 
+// Defensive name-based routing. If an HL Product name isn't in
+// HL_PRODUCT_MAP exactly, we still try to keep big-ticket items out of
+// the accessories bucket — e.g. anything with "decking" or "flooring"
+// in the name belongs under exterior, not as a deck-accessory. Returns
+// `null` when no rule matches so the caller falls through to
+// FALLBACK_MAPPING.
+function resolveFromName(name: string): HLProductMapping | null {
+  const n = name.toLowerCase();
+  if (n.includes("decking") || n.includes("flooring") || n.includes("floor deck")) {
+    return {
+      category: "exterior",
+      productType: "floor-decking",
+      defaultImage: "/images/categories/exterior.jpg",
+    };
+  }
+  if (n.includes("wall cladding") || n.includes("cladding")) {
+    return {
+      category: "exterior",
+      productType: "wall-panels",
+      defaultImage: "/images/categories/coextruded-cladding.png",
+    };
+  }
+  return null;
+}
+
 // Per-HL-family detail defaults. Applied as a third-tier fallback after
 // seed match and HL shipping dimensions. Every variant under a given
 // family inherits these unless a per-SKU seed entry overrides them.
@@ -246,7 +271,10 @@ function buildCatalogFromHL(
   return sellable.map((item) => {
     const hlProduct = productById.get(item.product);
     const productName = hlProduct?.name ?? "Product";
-    const mapping = HL_PRODUCT_MAP[productName] ?? FALLBACK_MAPPING;
+    const mapping =
+      HL_PRODUCT_MAP[productName] ??
+      resolveFromName(productName) ??
+      FALLBACK_MAPPING;
     const { sku, variantName } = parseVariantName(item.name);
     const priceRecord = item.sku ? priceBySku.get(item.sku) : undefined;
     const price = priceRecord?.amount;

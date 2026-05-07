@@ -3,14 +3,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCatalog } from "@/lib/catalog";
-import { findVariant, findProductVariants, variantLabel } from "@/lib/slug";
+import {
+  findVariantWithParams,
+  findProductVariants,
+  variantLabel,
+} from "@/lib/slug";
 import MaterialCalculator from "@/components/products/MaterialCalculator";
 import ProductInfoSection from "@/components/products/ProductInfoSection";
 import ProductFAQSection from "@/components/products/ProductFAQSection";
 import ProductCTAs from "@/components/products/ProductCTAs";
 import StockPill from "@/components/products/StockPill";
 import ToneSelector from "@/components/products/ToneSelector";
-import VariantSelector from "@/components/products/VariantSelector";
+import VariantAxisDropdowns from "@/components/products/VariantAxisDropdowns";
+import VariantSwatches from "@/components/products/VariantSwatches";
+import { VariantSelectionProvider } from "@/components/products/VariantSelectionContext";
 import { formatInches } from "@/lib/units";
 import { discountPercent } from "@/lib/price";
 
@@ -18,12 +24,24 @@ type PageParams = { productSlug: string; variantSlug: string };
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<PageParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { productSlug, variantSlug: vSlug } = await params;
+  const sp = await searchParams;
+  const axisFilters: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    if (typeof v === "string") axisFilters[k] = v;
+  }
   const catalog = await getCatalog();
-  const variant = findVariant(productSlug, vSlug, catalog);
+  const variant = findVariantWithParams(
+    productSlug,
+    vSlug,
+    axisFilters,
+    catalog
+  );
   if (!variant) return { title: "Product not found | SARO TECH USA" };
 
   const label = variantLabel(variant);
@@ -67,12 +85,26 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 export default async function ProductVariantPage({
   params,
+  searchParams,
 }: {
   params: Promise<PageParams>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { productSlug, variantSlug: vSlug } = await params;
+  const sp = await searchParams;
+  // Flatten search params to a plain string map. Variant axes are
+  // single-valued (Ribs=4-Ribs, Size=Regular, …); ignore arrays.
+  const axisFilters: Record<string, string> = {};
+  for (const [k, v] of Object.entries(sp)) {
+    if (typeof v === "string") axisFilters[k] = v;
+  }
   const catalog = await getCatalog();
-  const variant = findVariant(productSlug, vSlug, catalog);
+  const variant = findVariantWithParams(
+    productSlug,
+    vSlug,
+    axisFilters,
+    catalog
+  );
   if (!variant) notFound();
 
   const siblings = findProductVariants(productSlug, catalog);
@@ -92,7 +124,7 @@ export default async function ProductVariantPage({
   const variantCode = variantLabel(variant);
 
   return (
-    <>
+    <VariantSelectionProvider>
       <div className="product-detail-page">
         <main className="product-detail-main container-std pt-6">
           {/* Breadcrumb */}
@@ -138,11 +170,12 @@ export default async function ProductVariantPage({
           </nav>
 
           <div
-            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[420px_minmax(0,1fr)] lg:gap-12"
+            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-12"
           >
             {/* LEFT COLUMN — title block + main image */}
             <div className="product-left-column flex flex-col gap-[30px]">
               <div className="product-title-section">
+                {/* Title row: just product name + category label. */}
                 <div className="product-title-row flex items-baseline gap-3">
                   <h1 className="product-title text-[26px] font-medium leading-tight text-saro-dark">
                     {variant.name}
@@ -151,14 +184,14 @@ export default async function ProductVariantPage({
                     {CATEGORY_LABEL[variant.category]}
                   </span>
                 </div>
-                <span className="product-detail-tone mt-1 block text-[14.4px] text-gray-500">
-                  {variantCode}
-                </span>
+                {/* Stock pill sits alone under the title row. The variant
+                    code (e.g. "A125-Antique Black Brushed") moved to the
+                    right column inline with the rib/size dropdown — see
+                    the .product-axis-section row below. */}
                 {variant.inventory && (
-                  <div className="mt-3">
+                  <div className="mt-2">
                     <StockPill
                       inventory={variant.inventory}
-                      size="md"
                       discountPercent={discountPercent(
                         variant.price,
                         variant.listPrice
@@ -168,26 +201,43 @@ export default async function ProductVariantPage({
                 )}
               </div>
 
-              <div className="product-image-section relative mx-auto h-[340px] w-full max-w-[420px] overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto">
+              <div className="product-image-section relative mx-auto h-[340px] w-full overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto lg:max-w-none">
                 <Image
                   src={variant.image}
                   alt={`${variant.name} — ${variant.variantName}`}
                   fill
                   priority
-                  sizes="(min-width: 1024px) 420px, 90vw"
+                  sizes="(min-width: 1024px) 700px, 90vw"
                   className="object-contain p-2"
                 />
               </div>
             </div>
 
-            {/* RIGHT COLUMN — variant selector + specs */}
+            {/* RIGHT COLUMN — non-Color axis dropdowns + swatch grid +
+                specs + CTAs. Color is intentionally absent from the
+                dropdown list (the swatch grid is the color picker). */}
             <div className="product-right-column flex flex-col gap-[25px] pt-5">
               {variant.variantAxes && variant.variantAxes.length > 0 ? (
-                <VariantSelector
-                  product={variant}
-                  siblings={siblings}
-                  productSlug={productSlug}
-                />
+                <>
+                  {/* Axis dropdown row, with the variant code (e.g.
+                      "A125-Antique Black Brushed") inline on the right
+                      so the row reads like "Ribs: 3-Ribs ▾ ··· A125-…". */}
+                  <div className="product-axis-section flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2 border-t-2 border-black p-[10px]">
+                    <VariantAxisDropdowns
+                      product={variant}
+                      siblings={siblings}
+                      productSlug={productSlug}
+                    />
+                    <span className="text-[14.4px] text-saro-dark">
+                      {variantCode}
+                    </span>
+                  </div>
+                  <VariantSwatches
+                    product={variant}
+                    siblings={siblings}
+                    productSlug={productSlug}
+                  />
+                </>
               ) : (
                 <ToneSelector
                   siblings={siblings}
@@ -279,6 +329,6 @@ export default async function ProductVariantPage({
         {/* Section 4 — FAQ + install guide */}
         <ProductFAQSection productName={variant.name} />
       </div>
-    </>
+    </VariantSelectionProvider>
   );
 }
