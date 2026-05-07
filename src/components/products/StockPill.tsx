@@ -1,10 +1,7 @@
 import { Inventory } from "@/lib/types";
 
-type Size = "sm" | "md";
-
 interface Props {
   inventory: Inventory;
-  size?: Size;
   /**
    * Optional discount % (e.g. 29 for "29% OFF"). Surfaces inside the pill
    * when set — prices themselves are intentionally hidden from public
@@ -14,15 +11,14 @@ interface Props {
   discountPercent?: number;
 }
 
-export default function StockPill({
-  inventory,
-  size = "sm",
-  discountPercent,
-}: Props) {
+// Single compact size site-wide. Sized to sit inline with body copy and
+// next to product titles without dominating either. Earlier the pill had
+// a `size="md"` variant on the PDP that read too loudly next to the
+// 26px H1 — collapsed back to one consistent compact pill.
+export default function StockPill({ inventory, discountPercent }: Props) {
   const { available, inStock, allowOutOfStock } = inventory;
-  const padding = size === "sm" ? "px-2 py-0.5" : "px-3 py-1";
-  const text = size === "sm" ? "text-[11px]" : "text-[13px]";
-  const base = `inline-flex items-center gap-1 rounded-full font-semibold uppercase tracking-[0.5px] ${padding} ${text}`;
+  const base =
+    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.5px]";
 
   // Build the label without ever leaking the actual on-hand count.
   // Exact stock numbers ship later behind the rewards-program paywall.

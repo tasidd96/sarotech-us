@@ -325,12 +325,18 @@ export default function MaterialCalculator({
             </span>
             <span>Add 10% overage for cuts &amp; replacements</span>
           </button>
+          {/* Match the PDP CTA's typography (14px / tracking-wider / px-8
+              py-3) so both quote buttons read identically. Calc button
+              stays in the gray family — it's the secondary entry point
+              on the page; the primary green Request-a-Quote sits with
+              the qty stepper above. Active state darkens; disabled is
+              the standard #999 with pointer-events off. */}
           <a
             href={quoteHref}
             aria-disabled={!hasInput}
-            className={`quote-btn block w-full rounded-[5px] px-12 py-3 text-center text-[17.6px] font-semibold uppercase tracking-[1px] text-white transition-colors sm:inline-block sm:w-auto sm:py-2 ${
+            className={`inline-flex w-full items-center justify-center rounded px-8 py-3 text-center text-[14px] font-semibold uppercase tracking-wider text-white transition-colors sm:w-auto ${
               hasInput
-                ? "bg-saro-green hover:bg-saro-green-light"
+                ? "bg-gray-700 hover:bg-gray-800"
                 : "bg-[#999] pointer-events-none"
             }`}
           >

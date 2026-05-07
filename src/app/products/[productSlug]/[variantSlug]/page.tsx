@@ -10,7 +10,8 @@ import ProductFAQSection from "@/components/products/ProductFAQSection";
 import ProductCTAs from "@/components/products/ProductCTAs";
 import StockPill from "@/components/products/StockPill";
 import ToneSelector from "@/components/products/ToneSelector";
-import VariantSelector from "@/components/products/VariantSelector";
+import VariantAxisDropdowns from "@/components/products/VariantAxisDropdowns";
+import VariantSwatches from "@/components/products/VariantSwatches";
 import { formatInches } from "@/lib/units";
 import { discountPercent } from "@/lib/price";
 
@@ -138,34 +139,44 @@ export default async function ProductVariantPage({
           </nav>
 
           <div
-            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12"
+            className="product-detail-container grid grid-cols-1 gap-10 pb-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-12"
           >
             {/* LEFT COLUMN — title block + main image */}
             <div className="product-left-column flex flex-col gap-[30px]">
               <div className="product-title-section">
-                <div className="product-title-row flex items-baseline gap-3">
+                {/* Inline title row: product name, secondary axis dropdown
+                    (Size/Rib — no Color, swatches handle that), category
+                    label, and stock pill all share one flex-wrap row so
+                    they sit on the same line whenever there's room. On
+                    narrow viewports they wrap gracefully without falling
+                    into rigid stacked blocks. */}
+                <div className="product-title-row flex flex-wrap items-baseline gap-x-3 gap-y-2">
                   <h1 className="product-title text-[26px] font-medium leading-tight text-saro-dark">
                     {variant.name}
                   </h1>
+                  {variant.variantAxes && variant.variantAxes.length > 0 && (
+                    <VariantAxisDropdowns
+                      product={variant}
+                      siblings={siblings}
+                      productSlug={productSlug}
+                    />
+                  )}
                   <span className="product-detail-category text-[14px] font-normal text-gray-500">
                     {CATEGORY_LABEL[variant.category]}
                   </span>
-                </div>
-                <span className="product-detail-tone mt-1 block text-[14.4px] text-gray-500">
-                  {variantCode}
-                </span>
-                {variant.inventory && (
-                  <div className="mt-3">
+                  {variant.inventory && (
                     <StockPill
                       inventory={variant.inventory}
-                      size="md"
                       discountPercent={discountPercent(
                         variant.price,
                         variant.listPrice
                       )}
                     />
-                  </div>
-                )}
+                  )}
+                </div>
+                <span className="product-detail-tone mt-1 block text-[14.4px] text-gray-500">
+                  {variantCode}
+                </span>
               </div>
 
               <div className="product-image-section relative mx-auto h-[340px] w-full overflow-hidden rounded-md bg-gray-50 sm:aspect-square sm:h-auto lg:max-w-none">
@@ -180,10 +191,13 @@ export default async function ProductVariantPage({
               </div>
             </div>
 
-            {/* RIGHT COLUMN — variant selector + specs */}
+            {/* RIGHT COLUMN — swatch grid + specs + CTAs.
+                Non-Color axis dropdowns (Size/Rib) live inline with the
+                H1 in the left column; only the visual swatch grid stays
+                here. */}
             <div className="product-right-column flex flex-col gap-[25px] pt-5">
               {variant.variantAxes && variant.variantAxes.length > 0 ? (
-                <VariantSelector
+                <VariantSwatches
                   product={variant}
                   siblings={siblings}
                   productSlug={productSlug}
