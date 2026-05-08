@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const SITE_NAME = "SARO TECH USA";
 const SITE_URL = "https://sarotech.us";
@@ -53,6 +54,7 @@ export default function RootLayout({
         <Footer />
         <GoogleAnalytics />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
