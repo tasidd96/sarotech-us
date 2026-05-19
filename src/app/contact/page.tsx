@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import ContactForm from "@/components/contact/ContactForm";
+import PhoneReveal from "@/components/ui/PhoneReveal";
 
 export const metadata = {
   title: "Contact | SARO TECH",
@@ -47,12 +48,11 @@ export default function ContactPage() {
 
               <div>
                 <h2 className="mb-3 text-lg font-semibold">Call Us</h2>
-                <a
-                  href="tel:+18324476566"
-                  className="text-sm text-saro-green hover:underline"
-                >
-                  (832) 447-6566
-                </a>
+                <PhoneReveal
+                  parts={["+1", "832", "447", "6566"]}
+                  hiddenLabel="Show phone number"
+                  className="text-sm text-saro-green hover:underline cursor-pointer bg-transparent border-0 p-0"
+                />
                 <p className="mt-1 text-xs text-gray-500">Mon–Fri · 8am–5pm CT</p>
               </div>
 

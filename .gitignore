@@ -37,3 +37,7 @@ next-env.d.ts
 
 # local reference assets (downloaded source site files, not needed in repo)
 /reference/
+
+# screenshots / scratch images
+*.heic
+*.HEIC

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LocationsSection from "@/components/home/LocationsSection";
+import PhoneReveal from "@/components/ui/PhoneReveal";
 
 export const metadata = {
   title: "Locations | SARO TECH",
@@ -48,9 +49,11 @@ export default function LocationsPage() {
               </p>
               <p className="mb-2 text-gray-700">
                 <strong>Phone:</strong>{" "}
-                <a href="tel:+18324476566" className="text-saro-green hover:underline">
-                  (832) 447-6566
-                </a>
+                <PhoneReveal
+                  parts={["+1", "832", "447", "6566"]}
+                  hiddenLabel="Show phone number"
+                  className="text-saro-green hover:underline cursor-pointer bg-transparent border-0 p-0"
+                />
               </p>
               <p className="text-gray-700">
                 <strong>Email:</strong>{" "}

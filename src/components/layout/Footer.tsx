@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import TypewriterHeading from "@/components/home/TypewriterHeading";
+import PhoneReveal from "@/components/ui/PhoneReveal";
 
 const FOOTER_TAGLINE_PREFIX = "Next-generation architectural finishes,";
 const FOOTER_TAGLINE_SUFFIXES = [
@@ -165,17 +166,11 @@ export default function Footer() {
               >
                 Contact
               </p>
-              <a
-                href="tel:+18324476566"
-                style={{
-                  fontFamily: "PasticheGrotesque, Arial, sans-serif",
-                  color: "#fff",
-                  textDecoration: "none",
-                  fontSize: "0.95rem",
-                }}
-              >
-                (832) 447-6566
-              </a>
+              <PhoneReveal
+                parts={["+1", "832", "447", "6566"]}
+                hiddenLabel="Show phone number"
+                className="footer-phone-link"
+              />
             </div>
 
             {/* CTA column */}
@@ -292,6 +287,19 @@ export default function Footer() {
       </div>
 
       <style jsx>{`
+        .footer-phone-link {
+          font-family: PasticheGrotesque, Arial, sans-serif;
+          font-size: 0.95rem;
+          color: #fff;
+          background: transparent;
+          border: 0;
+          padding: 0;
+          text-decoration: none;
+          cursor: pointer;
+        }
+        .footer-phone-link:hover {
+          color: #3d8556;
+        }
         .footer-nav-link:hover {
           color: #3d8556 !important;
         }
