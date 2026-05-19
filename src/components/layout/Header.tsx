@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import PhoneReveal from "@/components/ui/PhoneReveal";
+
+const SARO_PHONE_PARTS = ["+1", "832", "447", "6566"];
 
 const navLinks = [
   { href: "/", label: "HOME", mobileLabel: "Home" },
@@ -146,10 +149,10 @@ export default function Header() {
             }}
           >
             {/* Call */}
-            <a
-              href="tel:+18324476566"
+            <PhoneReveal
+              parts={SARO_PHONE_PARTS}
+              ariaLabel="Call SARO TECH"
               className="call-btn"
-              aria-label="Call SARO TECH"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -159,6 +162,10 @@ export default function Header() {
                 borderRadius: "50%",
                 transition: "transform 0.3s ease",
                 color: "#fff",
+                background: "transparent",
+                border: 0,
+                padding: 0,
+                cursor: "pointer",
               }}
             >
               <svg
@@ -174,7 +181,7 @@ export default function Header() {
               >
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
-            </a>
+            </PhoneReveal>
             {/* Search */}
             <button
               aria-label="Search"
@@ -203,15 +210,19 @@ export default function Header() {
             md-breakpoint hide rule actually wins. Earlier this had an
             inline `display: flex` which clobbered `md:hidden` and made
             the icon show on desktop too. */}
-        <a
-          href="tel:+18324476566"
-          aria-label="Call SARO TECH"
+        <PhoneReveal
+          parts={SARO_PHONE_PARTS}
+          ariaLabel="Call SARO TECH"
           className="flex items-center justify-center md:hidden"
           style={{
             width: 44,
             height: 44,
             borderRadius: "50%",
             color: "#fff",
+            background: "transparent",
+            border: 0,
+            padding: 0,
+            cursor: "pointer",
           }}
         >
           <svg
@@ -227,7 +238,7 @@ export default function Header() {
           >
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
           </svg>
-        </a>
+        </PhoneReveal>
       </div>
 
       {/* ── Mobile nav carousel strip ── */}
